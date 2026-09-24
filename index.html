@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal LOST-FOUND - Dashboard</title>
+    
+    <!-- Scripts do Tailwind e Ícones -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Configuração EXATA de cores e temas do layout original -->
+    <script>
+        tailwind.config = { 
+            darkMode: 'class', 
+            theme: { 
+                extend: { 
+                    colors: { 
+                        darkBg: '#090F15', darkCard: '#444E54', darkText: '#B3B7BA', 
+                        lightBg: '#F3F4F6', lightCard: '#FFFFFF', primaryBtn: '#002147', borderGray: '#6C6D74' 
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-lightBg dark:bg-darkBg transition-colors duration-300 min-h-screen flex flex-col font-sans text-gray-800 dark:text-white">
+
+    <!-- Cabeçalho (Header) -->
+    <header class="bg-lightCard dark:bg-darkCard border-b border-borderGray/30 shadow-sm sticky top-0 z-40">
+        <div class="max-w-[1400px] mx-auto px-4 flex justify-between items-center h-16">
+            <h1 class="text-primaryBtn dark:text-white font-extrabold text-xl flex items-center gap-2">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Portal LOST-FOUND
+            </h1>
+            
+            <nav class="flex items-center space-x-6">
+                <!-- Abas de Navegação -->
+                <div class="flex space-x-1 bg-gray-200 dark:bg-black/30 p-1 rounded-lg" id="navbar">
+                    <button data-tab="numeros-gerais" class="nav-btn px-4 py-1.5 rounded-md text-sm font-bold bg-primaryBtn text-white shadow transition-all">Números Gerais</button>
+                    <button data-tab="monitoramento-diario" class="nav-btn px-4 py-1.5 rounded-md text-sm font-bold text-gray-600 dark:text-darkText hover:text-black dark:hover:text-white transition-all">Monitoramento Diário</button>
+                </div>
+
+                <!-- Botão de alternar tema -->
+                <button id="theme-toggle" onclick="alternarTema()" class="p-2 rounded-full bg-gray-100 dark:bg-black/30 text-gray-600 dark:text-gray-300 border border-borderGray/20 hover:bg-gray-200 dark:hover:bg-black/50 transition-all">
+                    <i id="icone-tema" data-lucide="moon" class="w-5 h-5"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-[1400px] mx-auto px-4 py-6 w-full flex-1">
+        
+        <!-- ========================================== -->
+        <!-- ABA 1: NÚMEROS GERAIS (INSPIRADO NA IMAGEM)-->
+        <!-- ========================================== -->
+        <section id="tab-numeros-gerais" class="page-section space-y-4">
+            
+            <!-- LINHA SUPERIOR: 3 Cartões Grandes -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <!-- Card 1: Volume Total (Verde claro) -->
+                <div class="bg-green-50/50 dark:bg-darkCard p-5 rounded-xl border border-green-200 dark:border-green-900/50 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+                    <h3 class="text-[11px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Volume Total de Tasks</h3>
+                    <div class="flex items-baseline gap-2 mt-2">
+                        <span class="text-5xl font-extrabold text-green-600 dark:text-green-400 tracking-tighter" id="val-vol-total">1.542</span>
+                        <span class="text-2xl font-bold text-green-600 dark:text-green-400">85%</span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-darkText mt-3">1.310 tarefas auditadas · <span class="text-red-500 font-bold">232</span> casos pendentes</p>
+                </div>
+
+                <!-- Card 2: Auditorias (Azul) -->
+                <div class="bg-lightCard dark:bg-darkCard p-5 rounded-xl border border-borderGray/20 shadow-sm relative overflow-hidden">
+                    <h3 class="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Auditorias Concluídas</h3>
+                    <div class="flex items-baseline gap-2 mt-2">
+                        <span class="text-5xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tighter" id="val-auditorias">1.310</span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-darkText mt-3">de 1.542 (85%)</p>
+                    <p class="text-[11px] text-gray-400 dark:text-gray-400 flex items-center gap-1 mt-1">
+                        <i data-lucide="package" class="w-3 h-3"></i> 850 Picking · 460 Packing
+                    </p>
+                </div>
+
+                <!-- Card 3: Ritmo e SLA (Amarelo) -->
+                <div class="bg-amber-50/30 dark:bg-darkCard p-5 rounded-xl border border-amber-200 dark:border-amber-900/30 shadow-sm relative overflow-hidden">
+                    <h3 class="text-[11px] font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider mb-3 flex items-center gap-1">
+                        <i data-lucide="timer" class="w-4 h-4"></i> Ritmo E SLA (ETD)
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-1 bg-amber-500 rounded"></div>
+                            <span class="text-sm font-bold">145 <span class="font-normal text-xs text-gray-500">auditorias/h últ. 2h</span></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-1 bg-orange-500 rounded"></div>
+                            <span class="text-sm font-bold text-orange-600 dark:text-orange-400">45 <span class="font-normal text-xs text-gray-500">próximos do corte ETD</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t border-borderGray/10 text-[10px] text-gray-400">
+                        Hist: — Picking: Estável · — Packing: Gargalo
+                    </div>
+                </div>
+            </div>
+
+            <!-- LINHA INFERIOR: 5 Cartões Detalhados -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6">
+                
+                <!-- Card Detalhe 1 (Verde) -->
+                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-green-500">
+                    <h4 class="text-[10px] font-extrabold text-green-600 dark:text-green-400 uppercase tracking-wider flex items-center gap-1 mb-2">
+                        ✓ Sem Divergência
+                    </h4>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-extrabold text-green-600 dark:text-green-400">890</span>
+                        <span class="text-xs font-bold text-gray-500">em</span>
+                        <span class="text-lg font-bold text-green-600 dark:text-green-400">57%</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-2">1.200 posições</p>
+                    <p class="text-[10px] text-gray-400 mt-1 italic">Físico de acordo com sistêmico</p>
+                </div>
+
+                <!-- Card Detalhe 2 (Laranja) -->
+                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-orange-500">
+                    <h4 class="text-[10px] font-extrabold text-orange-500 uppercase tracking-wider flex items-center gap-1 mb-2">
+                        ⚠ Divergência Picking
+                    </h4>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-extrabold text-orange-500">185</span>
+                        <span class="text-xs font-bold text-gray-500">em</span>
+                        <span class="text-lg font-bold text-orange-500">12%</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-2">250 posições</p>
+                    <p class="text-[10px] text-gray-400 mt-1 italic">Meli divergente · Massivo</p>
+                </div>
+
+                <!-- Card Detalhe 3 (Marrom/Cinza Escuro) -->
+                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-stone-500">
+                    <h4 class="text-[10px] font-extrabold text-stone-600 dark:text-stone-400 uppercase tracking-wider flex items-center gap-1 mb-2">
+                        ⚠ Divergência Packing
+                    </h4>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-extrabold text-stone-600 dark:text-stone-400">120</span>
+                        <span class="text-xs font-bold text-gray-500">em</span>
+                        <span class="text-lg font-bold text-stone-600 dark:text-stone-400">8%</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-2">150 posições</p>
+                    <p class="text-[10px] text-gray-400 mt-1 italic">Inversão Tote · Faltou bipar</p>
+                </div>
+
+                <!-- Card Detalhe 4 (Azul) -->
+                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-blue-500">
+                    <h4 class="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1 mb-2">
+                        ≈ Lost Salvo
+                    </h4>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">210</span>
+                        <span class="text-xs font-bold text-gray-500">em</span>
+                        <span class="text-lg font-bold text-blue-600 dark:text-blue-400">14%</span>
+                    </div>
+                    <div class="text-[10px] text-gray-500 dark:text-darkText mt-2 space-y-1">
+                        <p>🎯 <span class="font-bold text-blue-600 dark:text-blue-300">Shipping:</span> 150 und.</p>
+                        <p>🔬 <span class="font-bold text-blue-600 dark:text-blue-300">Mecanização:</span> 60 und.</p>
+                    </div>
+                </div>
+
+                <!-- Card Detalhe 5 (Vermelho) -->
+                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-red-500">
+                    <h4 class="text-[10px] font-extrabold text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1 mb-2">
+                        X Lost Não Localizado
+                    </h4>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-3xl font-extrabold text-red-600 dark:text-red-400">137</span>
+                        <span class="text-xs font-bold text-gray-500">em</span>
+                        <span class="text-lg font-bold text-red-600 dark:text-red-400">9%</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-2">180 posições</p>
+                    <p class="text-[10px] text-gray-400 mt-1 italic">Perdido MZ · Missed Backlog</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- ABA 2: MONITORAMENTO DIÁRIO (TABELA/LISTA) -->
+        <!-- ========================================== -->
+        <section id="tab-monitoramento-diario" class="page-section hidden">
+            
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold dark:text-white">Casos de Hoje</h2>
+                <div class="flex gap-2">
+                    <input type="text" placeholder="Buscar ID, TOTE, MELI..." class="p-2 text-sm border rounded-lg dark:bg-black/20 dark:border-borderGray dark:text-white outline-none focus:border-primaryBtn w-64">
+                    <select class="p-2 text-sm border rounded-lg dark:bg-black/20 dark:border-borderGray dark:text-white outline-none cursor-pointer">
+                        <option value="">Todos os Status</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="concluido">Concluído</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Exemplo de lista em cartões da operação diária -->
+            <div class="grid gap-3" id="lista-operacao">
+                <!-- Linha Exemplo -->
+                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl border border-borderGray/30 shadow-sm flex justify-between items-center">
+                    <div class="flex items-center gap-6">
+                        <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200 text-xs font-bold rounded">Pendente</span>
+                        <div>
+                            <p class="text-sm"><b>TOTE:</b> MU-TT-RC-24E-8A2 | <b>MELI:</b> UXKG70006 | <b>MZ:</b> MZ-0-013-008</p>
+                            <p class="text-xs text-gray-500 dark:text-darkText mt-0.5">Operador: João Silva | ETD: 12:00</p>
+                        </div>
+                    </div>
+                    <button class="px-4 py-1.5 bg-primaryBtn text-white rounded text-xs font-bold hover:bg-blue-900 transition-colors">Auditar</button>
+                </div>
+                <!-- Linha Exemplo -->
+                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl border border-borderGray/30 shadow-sm flex justify-between items-center">
+                    <div class="flex items-center gap-6">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 text-xs font-bold rounded">Concluído</span>
+                        <div>
+                            <p class="text-sm"><b>TOTE:</b> MU-TT-RC-361-978 | <b>MELI:</b> FVUK62040 | <b>MZ:</b> MZ-1-017-104</p>
+                            <p class="text-xs text-gray-500 dark:text-darkText mt-0.5">Operador: Maria Souza | ETD: 17:00</p>
+                        </div>
+                    </div>
+                    <button class="px-4 py-1.5 border border-gray-300 dark:border-borderGray text-gray-700 dark:text-gray-300 rounded text-xs font-bold hover:bg-gray-100 dark:hover:bg-black/30 transition-colors">Ver Detalhes</button>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        // Inicia ícones do Lucide
+        lucide.createIcons();
+
+        // Lógica de alternar tema (Claro/Escuro)
+        function alternarTema() {
+            const html = document.documentElement;
+            const iconeTema = document.getElementById('icone-tema');
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            if (iconeTema) {
+                iconeTema.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                lucide.createIcons();
+            }
+        }
+
+        // Lógica de navegação entre as Abas (Números Gerais vs Monitoramento)
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Remove estilos ativos de todos os botões
+                document.querySelectorAll('.nav-btn').forEach(b => {
+                    b.classList.remove('bg-primaryBtn', 'text-white', 'shadow');
+                    b.classList.add('text-gray-600', 'dark:text-darkText');
+                });
+                
+                // Aplica estilo ativo no botão clicado
+                e.target.classList.add('bg-primaryBtn', 'text-white', 'shadow');
+                e.target.classList.remove('text-gray-600', 'dark:text-darkText');
+
+                // Esconde todas as seções
+                document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
+                
+                // Mostra a seção correta
+                const tabId = e.target.getAttribute('data-tab');
+                document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
