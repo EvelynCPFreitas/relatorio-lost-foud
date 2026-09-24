@@ -64,21 +64,22 @@
                     <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
                     <h3 class="text-[11px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Volume Total de Tasks</h3>
                     <div class="flex items-baseline gap-2 mt-2">
-                        <span class="text-5xl font-extrabold text-green-600 dark:text-green-400 tracking-tighter" id="val-vol-total">1.542</span>
-                        <span class="text-2xl font-bold text-green-600 dark:text-green-400">85%</span>
+                        <!-- Adicionado ID val-vol-total -->
+                        <span class="text-5xl font-extrabold text-green-600 dark:text-green-400 tracking-tighter" id="val-vol-total">0</span>
                     </div>
-                    <p class="text-xs text-gray-500 dark:text-darkText mt-3">1.310 tarefas auditadas · <span class="text-red-500 font-bold">232</span> casos pendentes</p>
+                    <!-- Adicionado ID val-pendentes -->
+                    <p class="text-xs text-gray-500 dark:text-darkText mt-3">Base de dados sincronizada · <span class="text-red-500 font-bold" id="val-pendentes">0</span> casos pendentes</p>
                 </div>
 
                 <!-- Card 2: Auditorias (Azul) -->
                 <div class="bg-lightCard dark:bg-darkCard p-5 rounded-xl border border-borderGray/20 shadow-sm relative overflow-hidden">
                     <h3 class="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Auditorias Concluídas</h3>
                     <div class="flex items-baseline gap-2 mt-2">
-                        <span class="text-5xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tighter" id="val-auditorias">1.310</span>
+                        <!-- Adicionado ID val-auditorias -->
+                        <span class="text-5xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tighter" id="val-auditorias">0</span>
                     </div>
-                    <p class="text-xs text-gray-500 dark:text-darkText mt-3">de 1.542 (85%)</p>
-                    <p class="text-[11px] text-gray-400 dark:text-gray-400 flex items-center gap-1 mt-1">
-                        <i data-lucide="package" class="w-3 h-3"></i> 850 Picking · 460 Packing
+                    <p class="text-[11px] text-gray-400 dark:text-gray-400 flex items-center gap-1 mt-3">
+                        <i data-lucide="package" class="w-3 h-3"></i> Total de tarefas finalizadas
                     </p>
                 </div>
             </div>
@@ -92,12 +93,11 @@
                         ✓ Sem Divergência
                     </h4>
                     <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-extrabold text-green-600 dark:text-green-400">890</span>
-                        <span class="text-xs font-bold text-gray-500">em</span>
-                        <span class="text-lg font-bold text-green-600 dark:text-green-400">57%</span>
+                        <!-- Adicionado ID val-sem-div -->
+                        <span class="text-3xl font-extrabold text-green-600 dark:text-green-400" id="val-sem-div">0</span>
+                        <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
-                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-2">1.200 posições</p>
-                    <p class="text-[10px] text-gray-400 mt-1 italic">Físico de acordo com sistêmico</p>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">Físico de acordo com sistêmico</p>
                 </div>
 
                 <!-- Card Detalhe 2 (Laranja) -->
@@ -106,12 +106,11 @@
                         ⚠ Divergência Picking
                     </h4>
                     <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-extrabold text-orange-500">185</span>
-                        <span class="text-xs font-bold text-gray-500">em</span>
-                        <span class="text-lg font-bold text-orange-500">12%</span>
+                        <!-- Adicionado ID val-div-picking -->
+                        <span class="text-3xl font-extrabold text-orange-500" id="val-div-picking">0</span>
+                        <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
-                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-2">250 posições</p>
-                    <p class="text-[10px] text-gray-400 mt-1 italic">Meli divergente · Massivo</p>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">Meli divergente · Massivo</p>
                 </div>
 
                 <!-- Card Detalhe 3 (Marrom/Cinza Escuro) -->
@@ -120,12 +119,11 @@
                         ⚠ Divergência Packing
                     </h4>
                     <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-extrabold text-stone-600 dark:text-stone-400">120</span>
-                        <span class="text-xs font-bold text-gray-500">em</span>
-                        <span class="text-lg font-bold text-stone-600 dark:text-stone-400">8%</span>
+                        <!-- Adicionado ID val-div-packing -->
+                        <span class="text-3xl font-extrabold text-stone-600 dark:text-stone-400" id="val-div-packing">0</span>
+                        <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
-                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-2">150 posições</p>
-                    <p class="text-[10px] text-gray-400 mt-1 italic">Inversão Tote · Faltou bipar</p>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">Inversão Tote · Faltou bipar</p>
                 </div>
 
                 <!-- Card Detalhe 4 (Azul) -->
@@ -134,14 +132,11 @@
                         ≈ Lost Salvo
                     </h4>
                     <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">210</span>
-                        <span class="text-xs font-bold text-gray-500">em</span>
-                        <span class="text-lg font-bold text-blue-600 dark:text-blue-400">14%</span>
+                        <!-- Adicionado ID val-lost-salvo -->
+                        <span class="text-3xl font-extrabold text-blue-600 dark:text-blue-400" id="val-lost-salvo">0</span>
+                        <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
-                    <div class="text-[10px] text-gray-500 dark:text-darkText mt-2 space-y-1">
-                        <p>🎯 <span class="font-bold text-blue-600 dark:text-blue-300">Shipping:</span> 150 und.</p>
-                        <p>🔬 <span class="font-bold text-blue-600 dark:text-blue-300">Mecanização:</span> 60 und.</p>
-                    </div>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">Shipping · Mecanização</p>
                 </div>
 
                 <!-- Card Detalhe 5 (Vermelho) -->
@@ -150,12 +145,11 @@
                         X Lost Não Localizado
                     </h4>
                     <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-extrabold text-red-600 dark:text-red-400">137</span>
-                        <span class="text-xs font-bold text-gray-500">em</span>
-                        <span class="text-lg font-bold text-red-600 dark:text-red-400">9%</span>
+                        <!-- Adicionado ID val-lost-nao-loc -->
+                        <span class="text-3xl font-extrabold text-red-600 dark:text-red-400" id="val-lost-nao-loc">0</span>
+                        <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
-                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-2">180 posições</p>
-                    <p class="text-[10px] text-gray-400 mt-1 italic">Perdido MZ · Missed Backlog</p>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">Perdido MZ · Missed Backlog</p>
                 </div>
 
             </div>
@@ -208,12 +202,93 @@
 
     </main>
 
-    <script>
+    <!-- Script como Módulo para suportar o Firebase -->
+    <script type="module">
+        // 1. Importações do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
         // Inicia ícones do Lucide
         lucide.createIcons();
 
-        // Lógica de alternar tema (Claro/Escuro)
-        function alternarTema() {
+        // 2. Configuração do seu Banco de Dados
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHkwoHVDJVtEYtDzqbhbNp0wqUUGJNfQY",
+            authDomain: "portalicqa.firebaseapp.com",
+            projectId: "portalicqa",
+            storageBucket: "portalicqa.firebasestorage.app",
+            messagingSenderId: "894316718460",
+            appId: "1:894316718460:web:d07e8bc5646e982fe19cf9"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let tarefasCache = [];
+
+        // 3. Puxar os dados em tempo real
+        onSnapshot(collection(db, "tarefas"), (snapshot) => {
+            tarefasCache = [];
+            snapshot.forEach((docRef) => {
+                tarefasCache.push({ id: docRef.id, ...docRef.data() });
+            });
+            atualizarNumerosGerais();
+        });
+
+        // 4. Função para calcular os números e preencher os cartões
+        function atualizarNumerosGerais() {
+            const total = tarefasCache.length;
+            
+            let pendentes = 0;
+            let auditados = 0;
+            let semDivergencia = 0;
+            let divPicking = 0;
+            let divPacking = 0;
+            let lostSalvo = 0;
+            let lostNaoLocalizado = 0;
+
+            tarefasCache.forEach(t => {
+                const status = (t.status || '').toLowerCase();
+                const resultado = (t.resultado_auditoria || '').toLowerCase();
+
+                // Contagem Geral
+                if (status === 'pendente' || status === 'aguardando auditoria packing') pendentes++;
+                if (status === 'auditado') auditados++;
+                if (status === 'lost salvo') lostSalvo++;
+                if (status === 'lost não localizado' || status === 'lost nao localizado') lostNaoLocalizado++;
+
+                // Contagem de Divergências 
+                if (t.status_fisico === 'Sim') {
+                    semDivergencia++;
+                } else if (t.status_fisico === 'Nao') {
+                    divPicking++;
+                }
+
+                if (resultado !== 'aguardando' && resultado !== 'sem divergência' && !status.includes('lost')) {
+                    if (t.adicionadoPackingManual || t.auditadoPackingPor) {
+                        divPacking++;
+                    }
+                }
+            });
+
+            // Função auxiliar para atualizar o HTML se o ID existir
+            const atualizaDado = (id, valor) => {
+                const elemento = document.getElementById(id);
+                if (elemento) elemento.innerText = valor;
+            };
+
+            // Injetando os dados nos cartões da tela
+            atualizaDado('val-vol-total', total);
+            atualizaDado('val-pendentes', pendentes);
+            atualizaDado('val-auditorias', auditados);
+            atualizaDado('val-sem-div', semDivergencia);
+            atualizaDado('val-div-picking', divPicking);
+            atualizaDado('val-div-packing', divPacking);
+            atualizaDado('val-lost-salvo', lostSalvo);
+            atualizaDado('val-lost-nao-loc', lostNaoLocalizado);
+        }
+
+        // 5. Expor funções de UI globalmente para o HTML
+        window.alternarTema = function() {
             const html = document.documentElement;
             const iconeTema = document.getElementById('icone-tema');
             html.classList.toggle('dark');
@@ -222,7 +297,7 @@
                 iconeTema.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
                 lucide.createIcons();
             }
-        }
+        };
 
         // Lógica de navegação entre as Abas (Números Gerais vs Monitoramento)
         document.querySelectorAll('.nav-btn').forEach(btn => {
