@@ -139,35 +139,36 @@
             <!-- ========================================== -->
             <!-- NOVO PAINEL DE GRÁFICO: CULPABILIDADE      -->
             <!-- ========================================== -->
-            <div class="mt-4 bg-lightCard dark:bg-darkCard p-6 rounded-xl shadow-sm border border-borderGray/20">
-                <h3 class="text-sm font-bold text-primaryBtn dark:text-blue-400 mb-6 flex items-center gap-2">
-                    <i data-lucide="pie-chart" class="w-4 h-4"></i> Culpabilidade por Cenário
+            <div class="mt-6 bg-lightCard dark:bg-darkCard p-8 rounded-xl shadow-sm border border-borderGray/20">
+                <h3 class="text-base font-bold text-gray-800 dark:text-white mb-1 flex items-center gap-2">
+                    <i data-lucide="target" class="w-5 h-5 text-red-500"></i> Casos por Cenário de Culpabilidade
                 </h3>
+                <p class="text-xs text-amber-600 dark:text-amber-400 italic mb-8">⚠ Apenas registros com divergência confirmada</p>
                 
-                <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
                     <!-- Esquerda: Gráfico de Rosca -->
-                    <div class="w-full md:w-1/3 flex justify-center relative h-64">
+                    <div class="w-full lg:w-1/3 flex justify-center relative h-64">
                         <canvas id="chart-culpabilidade"></canvas>
                     </div>
                     
-                    <!-- Direita: Tabela Legenda -->
-                    <div class="w-full md:w-2/3 overflow-x-auto">
+                    <!-- Direita: Tabela Legenda (Ordenada) -->
+                    <div class="w-full lg:w-2/3 overflow-x-auto">
                         <table class="w-full text-sm text-left dark:text-gray-200">
                             <thead>
                                 <tr class="border-b border-borderGray/20 text-xs text-gray-500 dark:text-gray-400 uppercase">
-                                    <th class="pb-2 font-semibold">Cenário / Culpabilidade</th>
-                                    <th class="pb-2 font-semibold text-right">Casos</th>
-                                    <th class="pb-2 font-semibold text-right">%</th>
+                                    <th class="pb-3 font-semibold">Cenário / Culpabilidade</th>
+                                    <th class="pb-3 font-semibold text-right">Casos</th>
+                                    <th class="pb-3 font-semibold text-right">%</th>
                                 </tr>
                             </thead>
                             <tbody id="tabela-culpabilidade-body" class="divide-y divide-borderGray/10">
-                                <!-- Preenchido dinamicamente via JS -->
+                                <!-- Preenchido dinamicamente via JS do maior para o menor -->
                             </tbody>
                             <tfoot class="font-bold border-t border-borderGray/20 text-black dark:text-white">
                                 <tr>
-                                    <td class="pt-3">Total</td>
-                                    <td class="pt-3 text-right" id="total-culpabilidade-casos">0</td>
-                                    <td class="pt-3 text-right">100%</td>
+                                    <td class="pt-4 text-base">Total</td>
+                                    <td class="pt-4 text-right text-base" id="total-culpabilidade-casos">0</td>
+                                    <td class="pt-4 text-right text-base">100%</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -194,7 +195,6 @@
                 </div>
             </div>
 
-            <!-- Exemplo de lista em cartões da operação diária -->
             <div class="grid gap-3" id="lista-operacao">
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl border border-borderGray/30 shadow-sm flex justify-between items-center">
                     <div class="flex items-center gap-6">
@@ -252,25 +252,18 @@
             let divPacking = 0;
             let lostSalvo = 0;
             let lostNaoLocalizado = 0;
-
-            // Dicionário com as categorias e cores exatas da Imagem 2
-            const mapaCulpabilidade = {
-                "Inconclusivo": { count: 0, color: "#10B981" }, // Verde
-                "Picking Massivo": { count: 0, color: "#F59E0B" }, // Laranja
-                "Packing não bipou todas as unidades": { count: 0, color: "#EF4444" }, // Vermelho
-                "Deixado no endereço ao lado": { count: 0, color: "#A855F7" }, // Roxo
-                "Deixado no endereço / Encontrado na bin": { count: 0, color: "#002147" }, // Azul Escuro (sua cor primária)
-                "Troca de etiqueta ou produto (inversão de pedido)": { count: 0, color: "#3B82F6" }, // Azul Claro
-                "Outros": { count: 0, color: "#9CA3AF" } // Cinza para motivos não mapeados
-            };
             
-            let totalCulpabilidade = 0;
+            // Mapa para armazenar las ocurrencias de culpabilidad extraídas del código original
+            const mapCulp = {};
 
             tarefasCache.forEach(t => {
                 const status = (t.status || '').toLowerCase();
                 const resultadoAuditoria = (t.resultado_auditoria || '').trim();
                 const resultadoPicking = (t.resultado_picking || '').trim();
-                const culpabilidadeTask = t.culpabilidade || resultadoPicking || resultadoAuditoria || "";
+                
+                // Extrae la culpabilidad tal como se hacía en tu archivo index.html original
+                const k = (t.resultado_auditoria || '').trim();
+                const kNorm = k.toLowerCase();
 
                 // 1. Lógica dos 5 Cartões Superiores
                 if (status === 'pendente') pendentesPicking++;
@@ -286,22 +279,9 @@
                     if (t.adicionadoPackingManual || t.auditadoPackingPor) divPacking++;
                 }
 
-                // 2. Lógica para popular a Tabela e Gráfico de Culpabilidade
-                if (culpabilidadeTask && culpabilidadeTask.toLowerCase() !== "aguardando" && culpabilidadeTask.toLowerCase() !== "sem divergência" && culpabilidadeTask.toLowerCase() !== "cycle" && !status.includes("lost")) {
-                    let encontradoNoMapa = false;
-                    for (let chave in mapaCulpabilidade) {
-                        if (culpabilidadeTask.toLowerCase() === chave.toLowerCase()) {
-                            mapaCulpabilidade[chave].count++;
-                            totalCulpabilidade++;
-                            encontradoNoMapa = true;
-                            break;
-                        }
-                    }
-                    // Se houver um motivo que não está na lista oficial
-                    if (!encontradoNoMapa) {
-                        mapaCulpabilidade["Outros"].count++;
-                        totalCulpabilidade++;
-                    }
+                // 2. Lógica de extracción de datos del gráfico de Culpabilidad (basado en el index.html original)
+                if (k && kNorm !== 'aguardando' && kNorm !== 'sem divergência' && kNorm !== 'sem divergencia' && kNorm !== 'cycle' && !status.includes('lost')) {
+                    mapCulp[k] = (mapCulp[k] || 0) + 1;
                 }
             });
 
@@ -321,45 +301,61 @@
             atualizaDado('val-lost-salvo', lostSalvo);
             atualizaDado('val-lost-nao-loc', lostNaoLocalizado);
 
-            // Atualizar Gráfico e Tabela
-            renderizarGraficoCulpabilidade(mapaCulpabilidade, totalCulpabilidade);
+            // Renderiza el gráfico ordenado
+            renderizarGraficoCulpabilidade(mapCulp);
         }
 
-        function renderizarGraficoCulpabilidade(dados, total) {
+        function renderizarGraficoCulpabilidade(dadosCulpabilidade) {
             const tbody = document.getElementById('tabela-culpabilidade-body');
             tbody.innerHTML = '';
             
             const labels = [];
             const valoresData = [];
             const backgroundColors = [];
+            
+            // Paleta de colores inspirada en la imagen 1 proporcionada
+            const paletaCores = ['#00a650', '#ff7733', '#f23d4f', '#7b3cb3', '#3483fa', '#8c8c8c', '#10B981', '#F59E0B'];
 
-            // Preenche a tabela
-            Object.keys(dados).forEach(key => {
-                const item = dados[key];
-                // Adiciona todas as chaves na tabela, exceto "Outros" se for 0, para manter o layout bonito
-                if (item.count > 0 || key !== "Outros") { 
-                    labels.push(key);
-                    valoresData.push(item.count);
-                    backgroundColors.push(item.color);
-
-                    const percentual = total > 0 ? ((item.count / total) * 100).toFixed(0) + '%' : '0%';
-                    
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="py-2.5 flex items-center gap-3">
-                            <span class="w-3 h-3 rounded-sm block shadow-sm" style="background-color: ${item.color}"></span>
-                            <span class="font-medium">${key}</span>
-                        </td>
-                        <td class="py-2.5 text-right font-bold text-gray-700 dark:text-gray-200">${item.count}</td>
-                        <td class="py-2.5 text-right text-gray-500">${percentual}</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
+            // 1. Transforma los datos extraídos en una lista para poder ordenarlos
+            const arrayDados = Object.keys(dadosCulpabilidade).map(key => {
+                return {
+                    nome: key,
+                    count: dadosCulpabilidade[key]
+                };
             });
 
-            document.getElementById('total-culpabilidade-casos').innerText = total;
+            // 2. Ordena la lista de mayor a menor según el número de casos
+            arrayDados.sort((a, b) => b.count - a.count);
+            
+            // Calcula el total general de los casos de culpabilidad
+            const totalCulpabilidade = arrayDados.reduce((acc, curr) => acc + curr.count, 0);
 
-            // Renderiza o Gráfico de Rosca
+            // 3. Completa la tabla iterando la lista ya ordenada
+            arrayDados.forEach((item, index) => {
+                // Asigna un color de la paleta dinámicamente
+                const color = paletaCores[index % paletaCores.length];
+                
+                labels.push(item.nome);
+                valoresData.push(item.count);
+                backgroundColors.push(color);
+
+                const percentual = totalCulpabilidade > 0 ? ((item.count / totalCulpabilidade) * 100).toFixed(0) + '%' : '0%';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-3.5 flex items-center gap-3">
+                        <span class="w-3.5 h-3.5 rounded-sm block shadow-sm" style="background-color: ${color}"></span>
+                        <span class="font-medium text-gray-800 dark:text-gray-300">${item.nome}</span>
+                    </td>
+                    <td class="py-3.5 text-right font-bold text-gray-800 dark:text-white text-base">${item.count}</td>
+                    <td class="py-3.5 text-right text-gray-500">${percentual}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('total-culpabilidade-casos').innerText = totalCulpabilidade;
+
+            // Dibuja el gráfico de anillo (Doughnut chart)
             const ctx = document.getElementById('chart-culpabilidade');
             if (!ctx) return;
 
@@ -367,9 +363,8 @@
                 chartCulpabilidadeInstance.destroy();
             }
 
-            // Se não houver dados, exibe gráfico cinza vazio
-            const chartData = total > 0 ? valoresData : [1];
-            const chartColors = total > 0 ? backgroundColors : ['#E5E7EB'];
+            const chartData = totalCulpabilidade > 0 ? valoresData : [1];
+            const chartColors = totalCulpabilidade > 0 ? backgroundColors : ['#E5E7EB'];
 
             chartCulpabilidadeInstance = new Chart(ctx, {
                 type: 'doughnut',
@@ -378,19 +373,20 @@
                     datasets: [{
                         data: chartData,
                         backgroundColor: chartColors,
-                        borderWidth: 0,
-                        cutout: '70%' // Deixa o gráfico vazado no centro (estilo rosca fina)
+                        borderWidth: 2,
+                        borderColor: '#ffffff', // Borde blanco entre los segmentos al igual que la imagen
+                        cutout: '75%' // Hace el centro más hueco imitando el gráfico de derivación
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }, // Oculta a legenda padrão do gráfico, pois usamos a tabela
+                        legend: { display: false },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    if(total === 0) return ' Sem dados';
+                                    if(totalCulpabilidade === 0) return ' Sem dados';
                                     let label = context.label || '';
                                     if (label) label += ': ';
                                     label += context.raw + ' casos';
