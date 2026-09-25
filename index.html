@@ -253,18 +253,26 @@
             let lostSalvo = 0;
             let lostNaoLocalizado = 0;
             
-            // Mapa para armazenar las ocurrencias de culpabilidad extraídas del código original
+            // Mapa para armazenar os casos de culpabilidade
             const mapCulp = {};
+
+            // LISTA EXATA DOS MOTIVOS QUE VOCÊ QUER DESTACAR
+            const motivosPermitidos = [
+                "Inconclusivo",
+                "Picking Massivo",
+                "Deixado no endereço / Encontrado na bin",
+                "Meli divergente",
+                "Tote finalizada pela bancada com produto",
+                "Packing não bipou todas as unidades",
+                "Troca de etiqueta ou produto (inversão de pedido)",
+                "Backlog",
+                "Inversão de tote"
+            ];
 
             tarefasCache.forEach(t => {
                 const status = (t.status || '').toLowerCase();
                 const resultadoAuditoria = (t.resultado_auditoria || '').trim();
-                const resultadoPicking = (t.resultado_picking || '').trim();
                 
-                // Extrae la culpabilidad tal como se hacía en tu archivo index.html original
-                const k = (t.resultado_auditoria || '').trim();
-                const kNorm = k.toLowerCase();
-
                 // 1. Lógica dos 5 Cartões Superiores
                 if (status === 'pendente') pendentesPicking++;
                 if (status === 'aguardando auditoria packing') pendentesPacking++;
@@ -279,9 +287,29 @@
                     if (t.adicionadoPackingManual || t.auditadoPackingPor) divPacking++;
                 }
 
-                // 2. Lógica de extracción de datos del gráfico de Culpabilidad (basado en el index.html original)
-                if (k && kNorm !== 'aguardando' && kNorm !== 'sem divergência' && kNorm !== 'sem divergencia' && kNorm !== 'cycle' && !status.includes('lost')) {
-                    mapCulp[k] = (mapCulp[k] || 0) + 1;
+                // 2. Lógica para filtrar a Culpabilidade
+                // Ignorar os seguintes valores padrão que não são erros
+                const ignorarValores = ['aguardando', 'sem divergência', 'sem divergencia', 'cycle'];
+                
+                // Extrai o texto da culpabilidade do banco (tenta achar onde o usuário salvou isso)
+                let culpabilidadeAtual = (t.culpabilidade || t.resultado_picking || t.resultado_auditoria || t.alternativa || '').trim();
+                
+                // Ignora se estiver vazio, se for um valor ignorado, e EXCLUI TOTALMENTE O "LOST SALVO"
+                if (culpabilidadeAtual && !ignorarValores.includes(culpabilidadeAtual.toLowerCase()) && status !== 'lost salvo') {
+                    
+                    let categoriaFinal = "Outros"; // O padrão será sempre 'Outros'
+                    
+                    // Varre a lista de permitidos. Se bater exatamente (ou se conter a palavra Backlog), assume o nome oficial
+                    for (let motivo of motivosPermitidos) {
+                        if (culpabilidadeAtual.toLowerCase() === motivo.toLowerCase() || 
+                           (motivo === "Backlog" && culpabilidadeAtual.toLowerCase().includes("backlog"))) {
+                            categoriaFinal = motivo;
+                            break;
+                        }
+                    }
+
+                    // Registra no mapa final
+                    mapCulp[categoriaFinal] = (mapCulp[categoriaFinal] || 0) + 1;
                 }
             });
 
@@ -301,7 +329,7 @@
             atualizaDado('val-lost-salvo', lostSalvo);
             atualizaDado('val-lost-nao-loc', lostNaoLocalizado);
 
-            // Renderiza el gráfico ordenado
+            // Renderiza o gráfico já filtrado
             renderizarGraficoCulpabilidade(mapCulp);
         }
 
@@ -313,10 +341,10 @@
             const valoresData = [];
             const backgroundColors = [];
             
-            // Paleta de colores inspirada en la imagen 1 proporcionada
-            const paletaCores = ['#00a650', '#ff7733', '#f23d4f', '#7b3cb3', '#3483fa', '#8c8c8c', '#10B981', '#F59E0B'];
+            // Paleta de cores para os motivos permitidos
+            const paletaCores = ['#00a650', '#ff7733', '#f23d4f', '#7b3cb3', '#3483fa', '#002147', '#10B981', '#F59E0B', '#EC4899'];
 
-            // 1. Transforma los datos extraídos en una lista para poder ordenarlos
+            // 1. Transforma o mapa em lista para ordenar
             const arrayDados = Object.keys(dadosCulpabilidade).map(key => {
                 return {
                     nome: key,
@@ -324,16 +352,21 @@
                 };
             });
 
-            // 2. Ordena la lista de mayor a menor según el número de casos
+            // 2. Ordena a lista do maior para o menor
             arrayDados.sort((a, b) => b.count - a.count);
             
-            // Calcula el total general de los casos de culpabilidad
             const totalCulpabilidade = arrayDados.reduce((acc, curr) => acc + curr.count, 0);
 
-            // 3. Completa la tabla iterando la lista ya ordenada
-            arrayDados.forEach((item, index) => {
-                // Asigna un color de la paleta dinámicamente
-                const color = paletaCores[index % paletaCores.length];
+            let colorIndex = 0;
+
+            // 3. Preenche a tabela e as cores
+            arrayDados.forEach((item) => {
+                // Se for "Outros", a cor será sempre o cinza escuro. Senão, puxa da paleta de cores normal
+                let color = '#8c8c8c'; 
+                if (item.nome !== "Outros") {
+                    color = paletaCores[colorIndex % paletaCores.length];
+                    colorIndex++;
+                }
                 
                 labels.push(item.nome);
                 valoresData.push(item.count);
@@ -355,7 +388,7 @@
 
             document.getElementById('total-culpabilidade-casos').innerText = totalCulpabilidade;
 
-            // Dibuja el gráfico de anillo (Doughnut chart)
+            // Desenha o gráfico de Rosca
             const ctx = document.getElementById('chart-culpabilidade');
             if (!ctx) return;
 
@@ -374,8 +407,8 @@
                         data: chartData,
                         backgroundColor: chartColors,
                         borderWidth: 2,
-                        borderColor: '#ffffff', // Borde blanco entre los segmentos al igual que la imagen
-                        cutout: '75%' // Hace el centro más hueco imitando el gráfico de derivación
+                        borderColor: '#ffffff',
+                        cutout: '75%'
                     }]
                 },
                 options: {
