@@ -294,8 +294,15 @@
                 // Extrai o texto da culpabilidade do banco (tenta achar onde o usuário salvou isso)
                 let culpabilidadeAtual = (t.culpabilidade || t.resultado_picking || t.resultado_auditoria || t.alternativa || '').trim();
                 
-                // Ignora se estiver vazio, se for um valor ignorado, e EXCLUI TOTALMENTE O "LOST SALVO"
-                if (culpabilidadeAtual && !ignorarValores.includes(culpabilidadeAtual.toLowerCase()) && status !== 'lost salvo') {
+                // Normaliza para evitar problemas de maiúsculas/minúsculas antes de categorizar
+                if (culpabilidadeAtual.toLowerCase() === 'inconclusivo') culpabilidadeAtual = 'Inconclusivo';
+                
+                // Ignora valores vazios, valores padrão ignorados E exclui "Lost Salvo" e "Lost não localizado" (igual ao index 2)
+                if (culpabilidadeAtual && 
+                    !ignorarValores.includes(culpabilidadeAtual.toLowerCase()) && 
+                    status !== 'lost salvo' && 
+                    status !== 'lost não localizado' && 
+                    status !== 'lost nao localizado') {
                     
                     let categoriaFinal = "Outros"; // O padrão será sempre 'Outros'
                     
