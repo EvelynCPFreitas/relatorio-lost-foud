@@ -253,10 +253,8 @@
             let lostSalvo = 0;
             let lostNaoLocalizado = 0;
             
-            // Mapa para armazenar os casos de culpabilidade
             const mapCulp = {};
 
-            // LISTA EXATA DOS MOTIVOS QUE VOCÊ QUER DESTACAR
             const motivosPermitidos = [
                 "Inconclusivo",
                 "Picking Massivo",
@@ -271,6 +269,7 @@
 
             tarefasCache.forEach(t => {
                 const status = (t.status || '').toLowerCase();
+                // Lê diretamente o resultado_auditoria como o Portal faz
                 const resultadoAuditoria = (t.resultado_auditoria || '').trim();
                 
                 // 1. Lógica dos 5 Cartões Superiores
@@ -288,25 +287,21 @@
                 }
 
                 // 2. Lógica para filtrar a Culpabilidade
-                // Ignorar os seguintes valores padrão que não são erros
                 const ignorarValores = ['aguardando', 'sem divergência', 'sem divergencia', 'cycle'];
                 
-                // Extrai o texto da culpabilidade do banco (tenta achar onde o usuário salvou isso)
-                let culpabilidadeAtual = (t.culpabilidade || t.resultado_picking || t.resultado_auditoria || t.alternativa || '').trim();
+                // Aqui mudamos a fonte de leitura para ser IDÊNTICA ao Portal (Index 2)
+                let culpabilidadeAtual = resultadoAuditoria;
                 
-                // Normaliza para evitar problemas de maiúsculas/minúsculas antes de categorizar
+                // Normaliza
                 if (culpabilidadeAtual.toLowerCase() === 'inconclusivo') culpabilidadeAtual = 'Inconclusivo';
                 
-                // Ignora valores vazios, valores padrão ignorados E exclui "Lost Salvo" e "Lost não localizado" (igual ao index 2)
-                if (culpabilidadeAtual && 
-                    !ignorarValores.includes(culpabilidadeAtual.toLowerCase()) && 
-                    status !== 'lost salvo' && 
-                    status !== 'lost não localizado' && 
-                    status !== 'lost nao localizado') {
+                const isLost = (status === 'lost salvo' || status === 'lost não localizado' || status === 'lost nao localizado');
+
+                // Filtra ignorando os losts
+                if (!isLost && culpabilidadeAtual && !ignorarValores.includes(culpabilidadeAtual.toLowerCase())) {
                     
-                    let categoriaFinal = "Outros"; // O padrão será sempre 'Outros'
+                    let categoriaFinal = "Outros"; 
                     
-                    // Varre a lista de permitidos. Se bater exatamente (ou se conter a palavra Backlog), assume o nome oficial
                     for (let motivo of motivosPermitidos) {
                         if (culpabilidadeAtual.toLowerCase() === motivo.toLowerCase() || 
                            (motivo === "Backlog" && culpabilidadeAtual.toLowerCase().includes("backlog"))) {
@@ -315,7 +310,6 @@
                         }
                     }
 
-                    // Registra no mapa final
                     mapCulp[categoriaFinal] = (mapCulp[categoriaFinal] || 0) + 1;
                 }
             });
