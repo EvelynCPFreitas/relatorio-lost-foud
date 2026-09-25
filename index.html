@@ -86,17 +86,8 @@
                 </div>
             </div>
 
-            <!-- LINHA INFERIOR: 5 Cartões Detalhados -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6">
-                
-                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-green-500">
-                    <h4 class="text-[10px] font-extrabold text-green-600 dark:text-green-400 uppercase tracking-wider flex items-center gap-1 mb-2">✓ Sem Divergência</h4>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-extrabold text-green-600 dark:text-green-400" id="val-sem-div">0</span>
-                        <span class="text-xs font-bold text-gray-500">casos</span>
-                    </div>
-                    <p class="text-[10px] text-gray-400 mt-2 italic">Físico de acordo com sistêmico</p>
-                </div>
+            <!-- LINHA INFERIOR: 4 Cartões Detalhados -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
 
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-orange-500">
                     <h4 class="text-[10px] font-extrabold text-orange-500 uppercase tracking-wider flex items-center gap-1 mb-2">⚠ Divergência Picking</h4>
@@ -247,7 +238,6 @@
             let pendentesPicking = 0;
             let pendentesPacking = 0;
             let auditados = 0;
-            let semDivergencia = 0;
             let divPicking = 0;
             let divPacking = 0;
             let lostSalvo = 0;
@@ -272,15 +262,14 @@
                 // Lê diretamente o resultado_auditoria como o Portal faz
                 const resultadoAuditoria = (t.resultado_auditoria || '').trim();
                 
-                // 1. Lógica dos 5 Cartões Superiores
+                // 1. Lógica dos Cartões Superiores
                 if (status === 'pendente') pendentesPicking++;
                 if (status === 'aguardando auditoria packing') pendentesPacking++;
                 if (status === 'auditado') auditados++;
                 if (status === 'lost salvo') lostSalvo++;
                 if (status === 'lost não localizado' || status === 'lost nao localizado') lostNaoLocalizado++;
 
-                if (t.status_fisico === 'Sim') semDivergencia++;
-                else if (t.status_fisico === 'Nao') divPicking++;
+                if (t.status_fisico === 'Nao') divPicking++;
 
                 if (resultadoAuditoria.toLowerCase() !== 'aguardando' && resultadoAuditoria.toLowerCase() !== 'sem divergência' && !status.includes('lost')) {
                     if (t.adicionadoPackingManual || t.auditadoPackingPor) divPacking++;
@@ -324,7 +313,6 @@
             atualizaDado('val-pendentes-picking', pendentesPicking);
             atualizaDado('val-pendentes-packing', pendentesPacking);
             atualizaDado('val-auditorias', auditados);
-            atualizaDado('val-sem-div', semDivergencia);
             atualizaDado('val-div-picking', divPicking);
             atualizaDado('val-div-packing', divPacking);
             atualizaDado('val-lost-salvo', lostSalvo);
