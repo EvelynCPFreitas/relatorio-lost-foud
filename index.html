@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório LOST-FOUND</title>
     
-    <!-- Scripts do Tailwind e Ícones -->
+    <!-- Scripts do Tailwind, Ícones e Gráficos -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Configuração EXATA de cores e temas do layout original -->
     <script>
@@ -56,26 +57,27 @@
         <!-- ========================================== -->
         <section id="tab-numeros-gerais" class="page-section space-y-4">
             
-            <!-- LINHA SUPERIOR: Ajustada para 2 Cartões Grandes (md:grid-cols-2) -->
+            <!-- LINHA SUPERIOR: 2 Cartões Grandes -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
-                <!-- Card 1: Volume Total (Verde claro) -->
+                <!-- Card 1: Volume Total -->
                 <div class="bg-green-50/50 dark:bg-darkCard p-5 rounded-xl border border-green-200 dark:border-green-900/50 shadow-sm relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
                     <h3 class="text-[11px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Volume Total de Tasks</h3>
                     <div class="flex items-baseline gap-2 mt-2">
-                        <!-- Adicionado ID val-vol-total -->
                         <span class="text-5xl font-extrabold text-green-600 dark:text-green-400 tracking-tighter" id="val-vol-total">0</span>
                     </div>
-                    <!-- Adicionado ID val-pendentes -->
-                    <p class="text-xs text-gray-500 dark:text-darkText mt-3">Base de dados sincronizada · <span class="text-red-500 font-bold" id="val-pendentes">0</span> casos pendentes</p>
+                    <p class="text-xs text-gray-500 dark:text-darkText mt-3">
+                        Base de dados sincronizada · Pendentes: 
+                        <span class="text-red-500 font-bold" id="val-pendentes-picking">0</span> Picking | 
+                        <span class="text-red-500 font-bold" id="val-pendentes-packing">0</span> Packing
+                    </p>
                 </div>
 
-                <!-- Card 2: Auditorias (Azul) -->
+                <!-- Card 2: Auditorias Concluídas -->
                 <div class="bg-lightCard dark:bg-darkCard p-5 rounded-xl border border-borderGray/20 shadow-sm relative overflow-hidden">
                     <h3 class="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Auditorias Concluídas</h3>
                     <div class="flex items-baseline gap-2 mt-2">
-                        <!-- Adicionado ID val-auditorias -->
                         <span class="text-5xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tighter" id="val-auditorias">0</span>
                     </div>
                     <p class="text-[11px] text-gray-400 dark:text-gray-400 flex items-center gap-1 mt-3">
@@ -87,65 +89,45 @@
             <!-- LINHA INFERIOR: 5 Cartões Detalhados -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6">
                 
-                <!-- Card Detalhe 1 (Verde) -->
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-green-500">
-                    <h4 class="text-[10px] font-extrabold text-green-600 dark:text-green-400 uppercase tracking-wider flex items-center gap-1 mb-2">
-                        ✓ Sem Divergência
-                    </h4>
+                    <h4 class="text-[10px] font-extrabold text-green-600 dark:text-green-400 uppercase tracking-wider flex items-center gap-1 mb-2">✓ Sem Divergência</h4>
                     <div class="flex items-baseline gap-1">
-                        <!-- Adicionado ID val-sem-div -->
                         <span class="text-3xl font-extrabold text-green-600 dark:text-green-400" id="val-sem-div">0</span>
                         <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
                     <p class="text-[10px] text-gray-400 mt-2 italic">Físico de acordo com sistêmico</p>
                 </div>
 
-                <!-- Card Detalhe 2 (Laranja) -->
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-orange-500">
-                    <h4 class="text-[10px] font-extrabold text-orange-500 uppercase tracking-wider flex items-center gap-1 mb-2">
-                        ⚠ Divergência Picking
-                    </h4>
+                    <h4 class="text-[10px] font-extrabold text-orange-500 uppercase tracking-wider flex items-center gap-1 mb-2">⚠ Divergência Picking</h4>
                     <div class="flex items-baseline gap-1">
-                        <!-- Adicionado ID val-div-picking -->
                         <span class="text-3xl font-extrabold text-orange-500" id="val-div-picking">0</span>
                         <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
                     <p class="text-[10px] text-gray-400 mt-2 italic">Meli divergente · Massivo</p>
                 </div>
 
-                <!-- Card Detalhe 3 (Marrom/Cinza Escuro) -->
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-stone-500">
-                    <h4 class="text-[10px] font-extrabold text-stone-600 dark:text-stone-400 uppercase tracking-wider flex items-center gap-1 mb-2">
-                        ⚠ Divergência Packing
-                    </h4>
+                    <h4 class="text-[10px] font-extrabold text-stone-600 dark:text-stone-400 uppercase tracking-wider flex items-center gap-1 mb-2">⚠ Divergência Packing</h4>
                     <div class="flex items-baseline gap-1">
-                        <!-- Adicionado ID val-div-packing -->
                         <span class="text-3xl font-extrabold text-stone-600 dark:text-stone-400" id="val-div-packing">0</span>
                         <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
                     <p class="text-[10px] text-gray-400 mt-2 italic">Inversão Tote · Faltou bipar</p>
                 </div>
 
-                <!-- Card Detalhe 4 (Azul) -->
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-blue-500">
-                    <h4 class="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1 mb-2">
-                        ≈ Lost Salvo
-                    </h4>
+                    <h4 class="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1 mb-2">≈ Lost Salvo</h4>
                     <div class="flex items-baseline gap-1">
-                        <!-- Adicionado ID val-lost-salvo -->
                         <span class="text-3xl font-extrabold text-blue-600 dark:text-blue-400" id="val-lost-salvo">0</span>
                         <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
                     <p class="text-[10px] text-gray-400 mt-2 italic">Shipping · Mecanização</p>
                 </div>
 
-                <!-- Card Detalhe 5 (Vermelho) -->
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-red-500">
-                    <h4 class="text-[10px] font-extrabold text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1 mb-2">
-                        X Lost Não Localizado
-                    </h4>
+                    <h4 class="text-[10px] font-extrabold text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1 mb-2">X Lost Não Localizado</h4>
                     <div class="flex items-baseline gap-1">
-                        <!-- Adicionado ID val-lost-nao-loc -->
                         <span class="text-3xl font-extrabold text-red-600 dark:text-red-400" id="val-lost-nao-loc">0</span>
                         <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
@@ -153,6 +135,46 @@
                 </div>
 
             </div>
+
+            <!-- ========================================== -->
+            <!-- NOVO PAINEL DE GRÁFICO: CULPABILIDADE      -->
+            <!-- ========================================== -->
+            <div class="mt-4 bg-lightCard dark:bg-darkCard p-6 rounded-xl shadow-sm border border-borderGray/20">
+                <h3 class="text-sm font-bold text-primaryBtn dark:text-blue-400 mb-6 flex items-center gap-2">
+                    <i data-lucide="pie-chart" class="w-4 h-4"></i> Culpabilidade por Cenário
+                </h3>
+                
+                <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                    <!-- Esquerda: Gráfico de Rosca -->
+                    <div class="w-full md:w-1/3 flex justify-center relative h-64">
+                        <canvas id="chart-culpabilidade"></canvas>
+                    </div>
+                    
+                    <!-- Direita: Tabela Legenda -->
+                    <div class="w-full md:w-2/3 overflow-x-auto">
+                        <table class="w-full text-sm text-left dark:text-gray-200">
+                            <thead>
+                                <tr class="border-b border-borderGray/20 text-xs text-gray-500 dark:text-gray-400 uppercase">
+                                    <th class="pb-2 font-semibold">Cenário / Culpabilidade</th>
+                                    <th class="pb-2 font-semibold text-right">Casos</th>
+                                    <th class="pb-2 font-semibold text-right">%</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-culpabilidade-body" class="divide-y divide-borderGray/10">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </tbody>
+                            <tfoot class="font-bold border-t border-borderGray/20 text-black dark:text-white">
+                                <tr>
+                                    <td class="pt-3">Total</td>
+                                    <td class="pt-3 text-right" id="total-culpabilidade-casos">0</td>
+                                    <td class="pt-3 text-right">100%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </section>
 
         <!-- ========================================== -->
@@ -174,7 +196,6 @@
 
             <!-- Exemplo de lista em cartões da operação diária -->
             <div class="grid gap-3" id="lista-operacao">
-                <!-- Linha Exemplo -->
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl border border-borderGray/30 shadow-sm flex justify-between items-center">
                     <div class="flex items-center gap-6">
                         <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200 text-xs font-bold rounded">Pendente</span>
@@ -185,17 +206,6 @@
                     </div>
                     <button class="px-4 py-1.5 bg-primaryBtn text-white rounded text-xs font-bold hover:bg-blue-900 transition-colors">Auditar</button>
                 </div>
-                <!-- Linha Exemplo -->
-                <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl border border-borderGray/30 shadow-sm flex justify-between items-center">
-                    <div class="flex items-center gap-6">
-                        <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200 text-xs font-bold rounded">Concluído</span>
-                        <div>
-                            <p class="text-sm"><b>TOTE:</b> MU-TT-RC-361-978 | <b>MELI:</b> FVUK62040 | <b>MZ:</b> MZ-1-017-104</p>
-                            <p class="text-xs text-gray-500 dark:text-darkText mt-0.5">Operador: Maria Souza | ETD: 17:00</p>
-                        </div>
-                    </div>
-                    <button class="px-4 py-1.5 border border-gray-300 dark:border-borderGray text-gray-700 dark:text-gray-300 rounded text-xs font-bold hover:bg-gray-100 dark:hover:bg-black/30 transition-colors">Ver Detalhes</button>
-                </div>
             </div>
 
         </section>
@@ -204,14 +214,11 @@
 
     <!-- Script como Módulo para suportar o Firebase -->
     <script type="module">
-        // 1. Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
-        // Inicia ícones do Lucide
         lucide.createIcons();
 
-        // 2. Configuração do seu Banco de Dados
         const firebaseConfig = {
             apiKey: "AIzaSyCHkwoHVDJVtEYtDzqbhbNp0wqUUGJNfQY",
             authDomain: "portalicqa.firebaseapp.com",
@@ -224,8 +231,8 @@
         const db = getFirestore(app);
 
         let tarefasCache = [];
+        let chartCulpabilidadeInstance = null;
 
-        // 3. Puxar os dados em tempo real
         onSnapshot(collection(db, "tarefas"), (snapshot) => {
             tarefasCache = [];
             snapshot.forEach((docRef) => {
@@ -234,11 +241,11 @@
             atualizarNumerosGerais();
         });
 
-        // 4. Função para calcular os números e preencher os cartões
         function atualizarNumerosGerais() {
             const total = tarefasCache.length;
             
-            let pendentes = 0;
+            let pendentesPicking = 0;
+            let pendentesPacking = 0;
             let auditados = 0;
             let semDivergencia = 0;
             let divPicking = 0;
@@ -246,48 +253,157 @@
             let lostSalvo = 0;
             let lostNaoLocalizado = 0;
 
+            // Dicionário com as categorias e cores exatas da Imagem 2
+            const mapaCulpabilidade = {
+                "Inconclusivo": { count: 0, color: "#10B981" }, // Verde
+                "Picking Massivo": { count: 0, color: "#F59E0B" }, // Laranja
+                "Packing não bipou todas as unidades": { count: 0, color: "#EF4444" }, // Vermelho
+                "Deixado no endereço ao lado": { count: 0, color: "#A855F7" }, // Roxo
+                "Deixado no endereço / Encontrado na bin": { count: 0, color: "#002147" }, // Azul Escuro (sua cor primária)
+                "Troca de etiqueta ou produto (inversão de pedido)": { count: 0, color: "#3B82F6" }, // Azul Claro
+                "Outros": { count: 0, color: "#9CA3AF" } // Cinza para motivos não mapeados
+            };
+            
+            let totalCulpabilidade = 0;
+
             tarefasCache.forEach(t => {
                 const status = (t.status || '').toLowerCase();
-                const resultado = (t.resultado_auditoria || '').toLowerCase();
+                const resultadoAuditoria = (t.resultado_auditoria || '').trim();
+                const resultadoPicking = (t.resultado_picking || '').trim();
+                const culpabilidadeTask = t.culpabilidade || resultadoPicking || resultadoAuditoria || "";
 
-                // Contagem Geral
-                if (status === 'pendente' || status === 'aguardando auditoria packing') pendentes++;
+                // 1. Lógica dos 5 Cartões Superiores
+                if (status === 'pendente') pendentesPicking++;
+                if (status === 'aguardando auditoria packing') pendentesPacking++;
                 if (status === 'auditado') auditados++;
                 if (status === 'lost salvo') lostSalvo++;
                 if (status === 'lost não localizado' || status === 'lost nao localizado') lostNaoLocalizado++;
 
-                // Contagem de Divergências 
-                if (t.status_fisico === 'Sim') {
-                    semDivergencia++;
-                } else if (t.status_fisico === 'Nao') {
-                    divPicking++;
+                if (t.status_fisico === 'Sim') semDivergencia++;
+                else if (t.status_fisico === 'Nao') divPicking++;
+
+                if (resultadoAuditoria.toLowerCase() !== 'aguardando' && resultadoAuditoria.toLowerCase() !== 'sem divergência' && !status.includes('lost')) {
+                    if (t.adicionadoPackingManual || t.auditadoPackingPor) divPacking++;
                 }
 
-                if (resultado !== 'aguardando' && resultado !== 'sem divergência' && !status.includes('lost')) {
-                    if (t.adicionadoPackingManual || t.auditadoPackingPor) {
-                        divPacking++;
+                // 2. Lógica para popular a Tabela e Gráfico de Culpabilidade
+                if (culpabilidadeTask && culpabilidadeTask.toLowerCase() !== "aguardando" && culpabilidadeTask.toLowerCase() !== "sem divergência" && culpabilidadeTask.toLowerCase() !== "cycle" && !status.includes("lost")) {
+                    let encontradoNoMapa = false;
+                    for (let chave in mapaCulpabilidade) {
+                        if (culpabilidadeTask.toLowerCase() === chave.toLowerCase()) {
+                            mapaCulpabilidade[chave].count++;
+                            totalCulpabilidade++;
+                            encontradoNoMapa = true;
+                            break;
+                        }
+                    }
+                    // Se houver um motivo que não está na lista oficial
+                    if (!encontradoNoMapa) {
+                        mapaCulpabilidade["Outros"].count++;
+                        totalCulpabilidade++;
                     }
                 }
             });
 
-            // Função auxiliar para atualizar o HTML se o ID existir
+            // Atualizar valores do HTML dos cartões
             const atualizaDado = (id, valor) => {
                 const elemento = document.getElementById(id);
                 if (elemento) elemento.innerText = valor;
             };
 
-            // Injetando os dados nos cartões da tela
             atualizaDado('val-vol-total', total);
-            atualizaDado('val-pendentes', pendentes);
+            atualizaDado('val-pendentes-picking', pendentesPicking);
+            atualizaDado('val-pendentes-packing', pendentesPacking);
             atualizaDado('val-auditorias', auditados);
             atualizaDado('val-sem-div', semDivergencia);
             atualizaDado('val-div-picking', divPicking);
             atualizaDado('val-div-packing', divPacking);
             atualizaDado('val-lost-salvo', lostSalvo);
             atualizaDado('val-lost-nao-loc', lostNaoLocalizado);
+
+            // Atualizar Gráfico e Tabela
+            renderizarGraficoCulpabilidade(mapaCulpabilidade, totalCulpabilidade);
         }
 
-        // 5. Expor funções de UI globalmente para o HTML
+        function renderizarGraficoCulpabilidade(dados, total) {
+            const tbody = document.getElementById('tabela-culpabilidade-body');
+            tbody.innerHTML = '';
+            
+            const labels = [];
+            const valoresData = [];
+            const backgroundColors = [];
+
+            // Preenche a tabela
+            Object.keys(dados).forEach(key => {
+                const item = dados[key];
+                // Adiciona todas as chaves na tabela, exceto "Outros" se for 0, para manter o layout bonito
+                if (item.count > 0 || key !== "Outros") { 
+                    labels.push(key);
+                    valoresData.push(item.count);
+                    backgroundColors.push(item.color);
+
+                    const percentual = total > 0 ? ((item.count / total) * 100).toFixed(0) + '%' : '0%';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="py-2.5 flex items-center gap-3">
+                            <span class="w-3 h-3 rounded-sm block shadow-sm" style="background-color: ${item.color}"></span>
+                            <span class="font-medium">${key}</span>
+                        </td>
+                        <td class="py-2.5 text-right font-bold text-gray-700 dark:text-gray-200">${item.count}</td>
+                        <td class="py-2.5 text-right text-gray-500">${percentual}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            document.getElementById('total-culpabilidade-casos').innerText = total;
+
+            // Renderiza o Gráfico de Rosca
+            const ctx = document.getElementById('chart-culpabilidade');
+            if (!ctx) return;
+
+            if (chartCulpabilidadeInstance) {
+                chartCulpabilidadeInstance.destroy();
+            }
+
+            // Se não houver dados, exibe gráfico cinza vazio
+            const chartData = total > 0 ? valoresData : [1];
+            const chartColors = total > 0 ? backgroundColors : ['#E5E7EB'];
+
+            chartCulpabilidadeInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: chartColors,
+                        borderWidth: 0,
+                        cutout: '70%' // Deixa o gráfico vazado no centro (estilo rosca fina)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }, // Oculta a legenda padrão do gráfico, pois usamos a tabela
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if(total === 0) return ' Sem dados';
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    label += context.raw + ' casos';
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Expor funções UI globalmente
         window.alternarTema = function() {
             const html = document.documentElement;
             const iconeTema = document.getElementById('icone-tema');
@@ -299,23 +415,17 @@
             }
         };
 
-        // Lógica de navegação entre as Abas (Números Gerais vs Monitoramento)
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // Remove estilos ativos de todos os botões
                 document.querySelectorAll('.nav-btn').forEach(b => {
                     b.classList.remove('bg-primaryBtn', 'text-white', 'shadow');
                     b.classList.add('text-gray-600', 'dark:text-darkText');
                 });
                 
-                // Aplica estilo ativo no botão clicado
                 e.target.classList.add('bg-primaryBtn', 'text-white', 'shadow');
                 e.target.classList.remove('text-gray-600', 'dark:text-darkText');
 
-                // Esconde todas as seções
                 document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
-                
-                // Mostra a seção correta
                 const tabId = e.target.getAttribute('data-tab');
                 document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             });
