@@ -19,8 +19,8 @@
                     colors: { 
                         darkBg: '#090F15', darkCard: '#444E54', darkText: '#B3B7BA', 
                         lightBg: '#F3F4F6', lightCard: '#FFFFFF', primaryBtn: '#002147', borderGray: '#6C6D74',
-                        /* Cores do Cycle baseadas no Portal */
-                        cycleColor: '#7b3cb3', cycleBgLight: '#fdfbff', cycleBorderLight: '#e8d3ff'
+                        /* Cores do Cycle baseadas na imagem da tag original */
+                        cycleColor: '#831843', cycleBgLight: '#fce8f3', cycleBorderLight: '#fbcfe8'
                     }
                 }
             }
@@ -124,28 +124,28 @@
                 </div>
             </div>
 
-            <!-- PAINEL CYCLE COM CORES AJUSTADAS -->
-            <div class="mt-6 bg-cycleBgLight dark:bg-darkCard p-6 rounded-xl shadow-sm border border-cycleBorderLight dark:border-[#7b3cb3]/30 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full" style="background-color: #7b3cb3;"></div>
-                <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color: #7b3cb3;">
+            <!-- PAINEL CYCLE COM CORES CORRIGIDAS (ROSA/VINHO) -->
+            <div class="mt-6 bg-cycleBgLight dark:bg-darkCard p-6 rounded-xl shadow-sm border border-cycleBorderLight dark:border-[#831843]/30 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full" style="background-color: #831843;"></div>
+                <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color: #831843;">
                     <i data-lucide="refresh-cw" class="w-5 h-5"></i> Relatório de Cycles
                 </h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-white dark:bg-black/20 p-4 rounded-lg border border-cycleBorderLight dark:border-borderGray/20">
                         <p class="text-[10px] text-gray-500 dark:text-darkText uppercase font-bold tracking-wider mb-1">Total de Cycles</p>
-                        <span class="text-4xl font-extrabold" style="color: #7b3cb3;" id="val-cycle-total">0</span>
+                        <span class="text-4xl font-extrabold" style="color: #831843;" id="val-cycle-total">0</span>
                     </div>
                     
                     <div class="bg-white dark:bg-black/20 p-4 rounded-lg border border-cycleBorderLight dark:border-borderGray/20">
                         <p class="text-[10px] text-gray-500 dark:text-darkText uppercase font-bold tracking-wider mb-1">Cycles Manuais</p>
-                        <span class="text-4xl font-extrabold" style="color: #7b3cb3;" id="val-cycle-manual">0</span>
+                        <span class="text-4xl font-extrabold" style="color: #831843;" id="val-cycle-manual">0</span>
                         <p class="text-[10px] text-gray-400 mt-1 italic">Retirados do volume geral</p>
                     </div>
 
                     <div class="bg-white dark:bg-black/20 p-4 rounded-lg border border-cycleBorderLight dark:border-borderGray/20">
                         <p class="text-[10px] text-gray-500 dark:text-darkText uppercase font-bold tracking-wider mb-1">Picking para Cycle</p>
-                        <span class="text-4xl font-extrabold" style="color: #7b3cb3;" id="val-cycle-picking">0</span>
+                        <span class="text-4xl font-extrabold" style="color: #831843;" id="val-cycle-picking">0</span>
                         <p class="text-[10px] text-gray-400 mt-1 italic">Somados no volume geral</p>
                     </div>
                 </div>
