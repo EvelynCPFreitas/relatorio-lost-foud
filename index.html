@@ -35,11 +35,13 @@
             </h1>
             
             <nav class="flex items-center space-x-6">
+                <!-- Abas de Navegação -->
                 <div class="flex space-x-1 bg-gray-200 dark:bg-black/30 p-1 rounded-lg" id="navbar">
                     <button data-tab="numeros-gerais" class="nav-btn px-4 py-1.5 rounded-md text-sm font-bold bg-primaryBtn text-white shadow transition-all">Números Gerais</button>
                     <button data-tab="monitoramento-diario" class="nav-btn px-4 py-1.5 rounded-md text-sm font-bold text-gray-600 dark:text-darkText hover:text-black dark:hover:text-white transition-all">Monitoramento Diário</button>
                 </div>
 
+                <!-- Botão de alternar tema -->
                 <button id="theme-toggle" onclick="alternarTema()" class="p-2 rounded-full bg-gray-100 dark:bg-black/30 text-gray-600 dark:text-gray-300 border border-borderGray/20 hover:bg-gray-200 dark:hover:bg-black/50 transition-all">
                     <i id="icone-tema" data-lucide="moon" class="w-5 h-5"></i>
                 </button>
@@ -47,8 +49,12 @@
         </div>
     </header>
 
+    <!-- Conteúdo Principal -->
     <main class="max-w-[1400px] mx-auto px-4 py-6 w-full flex-1">
         
+        <!-- ========================================== -->
+        <!-- ABA 1: NÚMEROS GERAIS -->
+        <!-- ========================================== -->
         <section id="tab-numeros-gerais" class="page-section space-y-4">
             
             <!-- LINHA SUPERIOR -->
@@ -116,7 +122,7 @@
                 </div>
             </div>
 
-            <!-- PAINEL CYCLE -->
+            <!-- PAINEL CYCLE ATUALIZADO -->
             <div class="mt-6 bg-purple-50/50 dark:bg-darkCard p-6 rounded-xl shadow-sm border border-purple-200 dark:border-purple-900/50 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
                 <h3 class="text-base font-bold text-purple-800 dark:text-purple-300 mb-4 flex items-center gap-2">
@@ -236,12 +242,15 @@
             atualizarNumerosGerais();
         });
 
+        // FUNÇÃO AUXILIAR: Verifica se um campo está ausente, vazio ou preenchido apenas com "-"
+        const isVazio = (val) => !val || val.trim() === '' || val.trim() === '-';
+
         function atualizarNumerosGerais() {
+            // Filtra o cache para calcular o Volume Total, subtraindo Apenas os Cycles Manuais reais
             const total = tarefasCache.filter(t => {
-                const resultadoAuditoria = (t.resultado_auditoria || '').trim().toLowerCase();
-                const tipo = (t.tipo || '').trim().toLowerCase();
-                const isCycleManual = (tipo === 'cycle') || (resultadoAuditoria === 'cycle' && !t.tote);
-                return !isCycleManual;
+                const res = (t.resultado_auditoria || '').trim().toLowerCase();
+                const manual = isVazio(t.tote) && isVazio(t.meli) && isVazio(t.etd) && res === 'cycle';
+                return !manual;
             }).length;
             
             let pendentesPicking = 0, pendentesPacking = 0, auditados = 0;
@@ -261,17 +270,18 @@
                 const status = (t.status || '').toLowerCase();
                 const resultadoAuditoria = (t.resultado_auditoria || '').trim();
                 const resultadoAuditoriaLower = resultadoAuditoria.toLowerCase();
-                const tipo = (t.tipo || '').trim().toLowerCase();
                 
-                // NOVA LÓGICA DE CONTAGEM DE CYCLE
-                const isCycleManual = (tipo === 'cycle') || (resultadoAuditoriaLower === 'cycle' && !t.tote);
-                // É considerado Cycle de Picking se teve divergência física (Nao) OU foi finalizado como cycle tendo um tote atrelado
-                const isCyclePicking = (t.status_fisico === 'Nao') || (resultadoAuditoriaLower === 'cycle' && !!t.tote);
+                // REGRAS DEFINIDAS PARA O MODAL DE CYCLE
+                // Cycle Manual: Sem Tote, Meli e ETD + Resultado é 'cycle'
+                const manual = isVazio(t.tote) && isVazio(t.meli) && isVazio(t.etd) && resultadoAuditoriaLower === 'cycle';
+                
+                // Picking Cycle: Com Tote, Meli e ETD + Culpabilidade de Picking + Div. Física Confirmada
+                const picking = !isVazio(t.tote) && !isVazio(t.meli) && !isVazio(t.etd) && resultadoAuditoriaLower !== 'cycle' && t.status_fisico === 'Nao';
 
-                if (isCycleManual) {
+                if (manual) {
                     cycleManual++;
                     cycleTotal++;
-                } else if (isCyclePicking) {
+                } else if (picking) {
                     cyclePicking++;
                     cycleTotal++;
                 }
