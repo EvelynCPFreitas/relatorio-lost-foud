@@ -128,6 +128,35 @@
             </div>
 
             <!-- ========================================== -->
+            <!-- NOVO PAINEL: MONITORAMENTO DE CYCLE        -->
+            <!-- ========================================== -->
+            <div class="mt-6 bg-purple-50/50 dark:bg-darkCard p-6 rounded-xl shadow-sm border border-purple-200 dark:border-purple-900/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
+                <h3 class="text-base font-bold text-purple-800 dark:text-purple-300 mb-4 flex items-center gap-2">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i> Relatório de Cycles
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white dark:bg-black/20 p-4 rounded-lg border border-purple-100 dark:border-borderGray/20">
+                        <p class="text-[10px] text-gray-500 dark:text-darkText uppercase font-bold tracking-wider mb-1">Total de Cycles</p>
+                        <span class="text-4xl font-extrabold text-purple-600 dark:text-purple-400" id="val-cycle-total">0</span>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-black/20 p-4 rounded-lg border border-purple-100 dark:border-borderGray/20">
+                        <p class="text-[10px] text-gray-500 dark:text-darkText uppercase font-bold tracking-wider mb-1">Cycles Manuais</p>
+                        <span class="text-4xl font-extrabold text-purple-600 dark:text-purple-400" id="val-cycle-manual">0</span>
+                        <p class="text-[10px] text-gray-400 mt-1 italic">Retirados do volume geral</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-black/20 p-4 rounded-lg border border-purple-100 dark:border-borderGray/20">
+                        <p class="text-[10px] text-gray-500 dark:text-darkText uppercase font-bold tracking-wider mb-1">Picking para Cycle</p>
+                        <span class="text-4xl font-extrabold text-purple-600 dark:text-purple-400" id="val-cycle-picking">0</span>
+                        <p class="text-[10px] text-gray-400 mt-1 italic">Somados no volume geral</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
             <!-- NOVO PAINEL DE GRÁFICO: CULPABILIDADE      -->
             <!-- ========================================== -->
             <div class="mt-6 bg-lightCard dark:bg-darkCard p-8 rounded-xl shadow-sm border border-borderGray/20">
@@ -238,12 +267,7 @@
                 const resultadoAuditoria = (t.resultado_auditoria || '').trim().toLowerCase();
                 const tipo = (t.tipo || '').trim().toLowerCase();
                 
-                // Identifica se é um Cycle Manual:
-                // 1. O campo 'tipo' no banco de dados é explicitamente 'cycle'
-                // OU 2. O resultado é 'cycle', mas a tarefa não tem um 'tote' atrelado a ela (indicando que não veio do picking padrão)
                 const isCycleManual = (tipo === 'cycle') || (resultadoAuditoria === 'cycle' && !t.tote);
-                
-                // Mantém na conta do Volume Total apenas se NÃO for um cycle manual
                 return !isCycleManual;
             }).length;
             
@@ -255,6 +279,11 @@
             let lostSalvo = 0;
             let lostNaoLocalizado = 0;
             
+            // Variáveis do Painel de Cycle
+            let cycleTotal = 0;
+            let cycleManual = 0;
+            let cyclePicking = 0;
+
             const mapCulp = {};
 
             const motivosPermitidos = [
@@ -271,9 +300,19 @@
 
             tarefasCache.forEach(t => {
                 const status = (t.status || '').toLowerCase();
-                // Lê diretamente o resultado_auditoria como o Portal faz
                 const resultadoAuditoria = (t.resultado_auditoria || '').trim();
+                const tipo = (t.tipo || '').trim().toLowerCase();
                 
+                // Lógica de Contagem dos Cycles
+                if (resultadoAuditoria.toLowerCase() === 'cycle' || tipo === 'cycle') {
+                    cycleTotal++;
+                    if (tipo === 'cycle' || !t.tote) {
+                        cycleManual++;
+                    } else {
+                        cyclePicking++;
+                    }
+                }
+
                 // 1. Lógica dos Cartões Superiores
                 if (status === 'pendente') pendentesPicking++;
                 if (status === 'aguardando auditoria packing') pendentesPacking++;
@@ -290,17 +329,13 @@
                 // 2. Lógica para filtrar a Culpabilidade
                 const ignorarValores = ['aguardando', 'sem divergência', 'sem divergencia', 'cycle'];
                 
-                // Aqui mudamos a fonte de leitura para ser IDÊNTICA ao Portal (Index 2)
                 let culpabilidadeAtual = resultadoAuditoria;
-                
-                // Normaliza
                 if (culpabilidadeAtual.toLowerCase() === 'inconclusivo') culpabilidadeAtual = 'Inconclusivo';
                 
                 const isLost = (status === 'lost salvo' || status === 'lost não localizado' || status === 'lost nao localizado');
 
                 // Filtra ignorando os losts
                 if (!isLost && culpabilidadeAtual && !ignorarValores.includes(culpabilidadeAtual.toLowerCase())) {
-                    
                     let categoriaFinal = "Outros"; 
                     
                     for (let motivo of motivosPermitidos) {
@@ -330,6 +365,11 @@
             atualizaDado('val-lost-salvo', lostSalvo);
             atualizaDado('val-lost-nao-loc', lostNaoLocalizado);
 
+            // Atualizar valores do novo painel Cycle
+            atualizaDado('val-cycle-total', cycleTotal);
+            atualizaDado('val-cycle-manual', cycleManual);
+            atualizaDado('val-cycle-picking', cyclePicking);
+
             // Renderiza o gráfico já filtrado
             renderizarGraficoCulpabilidade(mapCulp);
         }
@@ -342,10 +382,8 @@
             const valoresData = [];
             const backgroundColors = [];
             
-            // Paleta de cores para os motivos permitidos
             const paletaCores = ['#00a650', '#ff7733', '#f23d4f', '#7b3cb3', '#3483fa', '#002147', '#10B981', '#F59E0B', '#EC4899'];
 
-            // 1. Transforma o mapa em lista para ordenar
             const arrayDados = Object.keys(dadosCulpabilidade).map(key => {
                 return {
                     nome: key,
@@ -353,16 +391,13 @@
                 };
             });
 
-            // 2. Ordena a lista do maior para o menor
             arrayDados.sort((a, b) => b.count - a.count);
             
             const totalCulpabilidade = arrayDados.reduce((acc, curr) => acc + curr.count, 0);
 
             let colorIndex = 0;
 
-            // 3. Preenche a tabela e as cores
             arrayDados.forEach((item) => {
-                // Se for "Outros", a cor será sempre o cinza escuro. Senão, puxa da paleta de cores normal
                 let color = '#8c8c8c'; 
                 if (item.nome !== "Outros") {
                     color = paletaCores[colorIndex % paletaCores.length];
@@ -389,7 +424,6 @@
 
             document.getElementById('total-culpabilidade-casos').innerText = totalCulpabilidade;
 
-            // Desenha o gráfico de Rosca
             const ctx = document.getElementById('chart-culpabilidade');
             if (!ctx) return;
 
@@ -433,7 +467,6 @@
             });
         }
 
-        // Expor funções UI globalmente
         window.alternarTema = function() {
             const html = document.documentElement;
             const iconeTema = document.getElementById('icone-tema');
