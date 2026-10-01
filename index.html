@@ -233,7 +233,19 @@
         });
 
         function atualizarNumerosGerais() {
-            const total = tarefasCache.length;
+            // Filtra o cache para contar o Volume Total ignorando APENAS os Cycles Manuais
+            const total = tarefasCache.filter(t => {
+                const resultadoAuditoria = (t.resultado_auditoria || '').trim().toLowerCase();
+                const tipo = (t.tipo || '').trim().toLowerCase();
+                
+                // Identifica se é um Cycle Manual:
+                // 1. O campo 'tipo' no banco de dados é explicitamente 'cycle'
+                // OU 2. O resultado é 'cycle', mas a tarefa não tem um 'tote' atrelado a ela (indicando que não veio do picking padrão)
+                const isCycleManual = (tipo === 'cycle') || (resultadoAuditoria === 'cycle' && !t.tote);
+                
+                // Mantém na conta do Volume Total apenas se NÃO for um cycle manual
+                return !isCycleManual;
+            }).length;
             
             let pendentesPicking = 0;
             let pendentesPacking = 0;
