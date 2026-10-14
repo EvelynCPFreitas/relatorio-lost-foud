@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Configuração EXATA de cores e temas do layout original -->
+    <!-- Configuração de cores e temas -->
     <script>
         tailwind.config = { 
             darkMode: 'class', 
@@ -19,7 +19,6 @@
                     colors: { 
                         darkBg: '#090F15', darkCard: '#444E54', darkText: '#B3B7BA', 
                         lightBg: '#F3F4F6', lightCard: '#FFFFFF', primaryBtn: '#002147', borderGray: '#6C6D74',
-                        /* Cores do Cycle baseadas na imagem da tag original */
                         cycleColor: '#831843', cycleBgLight: '#fce8f3', cycleBorderLight: '#fbcfe8'
                     }
                 }
@@ -54,9 +53,7 @@
     <!-- Conteúdo Principal -->
     <main class="max-w-[1400px] mx-auto px-4 py-6 w-full flex-1">
         
-        <!-- ========================================== -->
         <!-- ABA 1: NÚMEROS GERAIS -->
-        <!-- ========================================== -->
         <section id="tab-numeros-gerais" class="page-section space-y-4">
             
             <!-- LINHA SUPERIOR -->
@@ -102,7 +99,7 @@
                         <span class="text-3xl font-extrabold text-stone-600 dark:text-stone-400" id="val-div-packing">0</span>
                         <span class="text-xs font-bold text-gray-500">casos</span>
                     </div>
-                    <p class="text-[10px] text-gray-400 mt-2 italic">Faltou bipar</p>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">Culpabilidade Packing (exceto Inversão Tote)</p>
                 </div>
 
                 <div class="bg-lightCard dark:bg-darkCard p-4 rounded-xl shadow-sm border border-borderGray/20 border-l-4 border-l-blue-500">
@@ -124,7 +121,7 @@
                 </div>
             </div>
 
-            <!-- PAINEL CYCLE COM CORES CORRIGIDAS (ROSA/VINHO) -->
+            <!-- PAINEL CYCLE -->
             <div class="mt-6 bg-cycleBgLight dark:bg-darkCard p-6 rounded-xl shadow-sm border border-cycleBorderLight dark:border-[#831843]/30 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1 h-full" style="background-color: #831843;"></div>
                 <h3 class="text-base font-bold mb-4 flex items-center gap-2" style="color: #831843;">
@@ -247,15 +244,17 @@
         const isVazio = (val) => !val || val.trim() === '' || val.trim() === '-';
 
         function atualizarNumerosGerais() {
-            const total = tarefasCache.filter(t => {
+            // REGRA 1: Volume total = Todos os registros - cycle manual
+            const tarefasValidas = tarefasCache.filter(t => {
                 const res = (t.resultado_auditoria || '').trim().toLowerCase();
                 const manual = isVazio(t.tote) && isVazio(t.meli) && isVazio(t.etd) && res === 'cycle';
                 return !manual;
-            }).length;
+            });
+
+            const total = tarefasValidas.length;
             
             let pendentesPicking = 0, pendentesPacking = 0, auditados = 0;
             let divPicking = 0, divPacking = 0, lostSalvo = 0, lostNaoLocalizado = 0;
-            
             let cycleTotal = 0, cycleManual = 0, cyclePicking = 0;
             const mapCulp = {};
 
@@ -267,50 +266,64 @@
             ];
 
             tarefasCache.forEach(t => {
-                const status = (t.status || '').toLowerCase();
+                const status = (t.status || '').toLowerCase().trim();
                 const resultadoAuditoria = (t.resultado_auditoria || '').trim();
                 const resultadoAuditoriaLower = resultadoAuditoria.toLowerCase();
                 
-                const manual = isVazio(t.tote) && isVazio(t.meli) && isVazio(t.etd) && resultadoAuditoriaLower === 'cycle';
-                const picking = !isVazio(t.tote) && !isVazio(t.meli) && !isVazio(t.etd) && resultadoAuditoriaLower !== 'cycle' && t.status_fisico === 'Nao';
+                const isManual = isVazio(t.tote) && isVazio(t.meli) && isVazio(t.etd) && resultadoAuditoriaLower === 'cycle';
+                const isPickingCycle = !isVazio(t.tote) && !isVazio(t.meli) && !isVazio(t.etd) && resultadoAuditoriaLower !== 'cycle' && t.status_fisico === 'Nao';
 
-                if (manual) {
+                // Cycles
+                if (isManual) {
                     cycleManual++;
                     cycleTotal++;
-                } else if (picking) {
+                } else if (isPickingCycle) {
                     cyclePicking++;
                     cycleTotal++;
                 }
 
+                // Pendentes
                 if (status === 'pendente') pendentesPicking++;
                 if (status === 'aguardando auditoria packing') pendentesPacking++;
-                
-                // ALTERAÇÃO AQUI: Considera 'auditado' e casos finalizados como 'lost'
-                if (status === 'auditado' || status === 'lost salvo' || status.includes('lost')) auditados++;
-                
-                if (status === 'lost salvo') lostSalvo++;
-                if (status === 'lost não localizado' || status === 'lost nao localizado') lostNaoLocalizado++;
 
-                // LÓGICA ATUALIZADA: Picking soma Inversão de Tote
-                if (t.status_fisico === 'Nao' || resultadoAuditoriaLower === 'inversão de tote' || resultadoAuditoriaLower === 'inversao de tote') {
+                // REGRA 2: Auditorias Concluídas = Status 'Auditado' + Lost Salvo + Lost Não Localizado (sem cycle manual)
+                const isAuditado = (status === 'auditado');
+                const isLostSalvo = (status === 'lost salvo');
+                const isLostNaoLoc = (status === 'lost não localizado' || status === 'lost nao localizado');
+
+                if (!isManual && (isAuditado || isLostSalvo || isLostNaoLoc)) {
+                    auditados++;
+                }
+
+                // Indicadores de Lost
+                if (isLostSalvo) lostSalvo++;
+                if (isLostNaoLoc) lostNaoLocalizado++;
+
+                // REGRA 3: Divergência Picking = Físico "não" de acordo + Inversão de Tote
+                const isInversaoTote = (resultadoAuditoriaLower === 'inversão de tote' || resultadoAuditoriaLower === 'inversao de tote');
+                
+                if (t.status_fisico === 'Nao' || isInversaoTote) {
                     divPicking++;
                 }
 
-                // LÓGICA ATUALIZADA: Packing ignora Inversão de Tote
+                // REGRA 4: Divergência Packing = Culpabilidade em Packing - Inversão de Tote
                 if (resultadoAuditoriaLower !== 'aguardando' && 
                     resultadoAuditoriaLower !== 'sem divergência' && 
+                    resultadoAuditoriaLower !== 'sem divergencia' && 
                     !status.includes('lost') && 
-                    resultadoAuditoriaLower !== 'inversão de tote' &&
-                    resultadoAuditoriaLower !== 'inversao de tote') {
+                    !isInversaoTote) {
                     
-                    if (t.adicionadoPackingManual || t.auditadoPackingPor) divPacking++;
+                    if (t.adicionadoPackingManual || t.auditadoPackingPor) {
+                        divPacking++;
+                    }
                 }
 
+                // Mapeamento para gráfico de Culpabilidade
                 const ignorarValores = ['aguardando', 'sem divergência', 'sem divergencia', 'cycle'];
                 let culpabilidadeAtual = resultadoAuditoria;
                 if (culpabilidadeAtual.toLowerCase() === 'inconclusivo') culpabilidadeAtual = 'Inconclusivo';
                 
-                const isLost = (status === 'lost salvo' || status === 'lost não localizado' || status === 'lost nao localizado');
+                const isLost = (isLostSalvo || isLostNaoLoc);
 
                 if (!isLost && culpabilidadeAtual && !ignorarValores.includes(culpabilidadeAtual.toLowerCase())) {
                     let categoriaFinal = "Outros"; 
@@ -325,6 +338,7 @@
                 }
             });
 
+            // Atualização dos elementos do DOM
             const atualizaDado = (id, valor) => {
                 const elemento = document.getElementById(id);
                 if (elemento) elemento.innerText = valor;
