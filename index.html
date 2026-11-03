@@ -270,6 +270,48 @@
 
         const isVazio = (val) => !val || String(val).trim() === '' || String(val).trim() === '-';
 
+        // Extração de hora que lê o padrão exato da data/hora registrado no documento
+        function extrairHoraDoItem(t) {
+            for (const key of Object.keys(t)) {
+                const val = t[key];
+                if (!val) continue;
+
+                // Se for Timestamp do Firestore
+                if (typeof val === 'object' && typeof val.toDate === 'function') {
+                    return val.toDate().getHours();
+                }
+
+                // Se for instância Date
+                if (val instanceof Date) {
+                    return val.getHours();
+                }
+
+                // Se for string com a data/hora exata mostrada na imagem: "(03/11/2026 09:16)"
+                if (typeof val === 'string') {
+                    // Padrão DD/MM/AAAA HH:MM ou AAAA-MM-DD HH:MM
+                    const matchDataHora = val.match(/\d{2,4}[-\/]\d{2}[-\/]\d{2,4}\s+(\d{1,2}):\d{2}/);
+                    if (matchDataHora) {
+                        return parseInt(matchDataHora[1], 10);
+                    }
+
+                    // Se vier em parênteses ou junto ao login: (09:16)
+                    const matchParenteses = val.match(/\((\d{2}\/\d{2}\/\d{4}\s+)?(\d{1,2}):\d{2}\)/);
+                    if (matchParenteses) {
+                        return parseInt(matchParenteses[2], 10);
+                    }
+
+                    // Se for campo de hora/registo habitual
+                    if (key.toLowerCase().includes('data') || key.toLowerCase().includes('hora') || key.toLowerCase().includes('criado') || key.toLowerCase().includes('reg')) {
+                        const matchSimples = val.match(/(?:T|\s|^)(\d{1,2}):\d{2}/);
+                        if (matchSimples) {
+                            return parseInt(matchSimples[1], 10);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         function atualizarNumerosGerais() {
             // REGRA 1: Volume total = Todos os registros - cycle manual
             const tarefasValidas = tarefasCache.filter(t => {
@@ -491,21 +533,10 @@
 
                 etdMap[etd].total++;
 
-                // Extrai a hora inteira de envio (0 a 23)
-                let horaRef = t.hora_envio || t.horario_envio || t.hora || t.criado_em || '';
-                let horaInteira = null;
+                // Extrai a hora inteira de envio da task
+                const horaInteira = extrairHoraDoItem(t);
 
-                if (horaRef) {
-                    if (typeof horaRef === 'string') {
-                        const match = horaRef.match(/(\d{1,2}):\d{2}/);
-                        if (match) horaInteira = parseInt(match[1], 10);
-                    } else if (horaRef.toDate) {
-                        const d = horaRef.toDate();
-                        horaInteira = d.getHours();
-                    }
-                }
-
-                if (horaInteira !== null && !isNaN(horaInteira)) {
+                if (horaInteira !== null && !isNaN(horaInteira) && horaInteira >= 0 && horaInteira <= 23) {
                     etdMap[etd].horasEnvio[horaInteira] = (etdMap[etd].horasEnvio[horaInteira] || 0) + 1;
                 }
             });
@@ -534,7 +565,6 @@
                     }
                 });
 
-                // A bolinha fica na posição numérica do horário (ex: 10 para 10h)
                 dadosLinhaHora.push(picoHoraNum);
                 dadosQtdEnvios.push(maiorQtd);
             });
@@ -556,7 +586,7 @@
                             type: 'line',
                             label: 'Hora de Maior Pico',
                             data: dadosLinhaHora,
-                            yAxisID: 'yHoras', // Vincula ao eixo das horas
+                            yAxisID: 'yHoras',
                             borderColor: '#f97316',
                             backgroundColor: '#ffffff',
                             pointBackgroundColor: '#ffffff',
@@ -564,6 +594,7 @@
                             pointBorderWidth: 2.5,
                             pointRadius: 5.5,
                             pointHoverRadius: 7,
+                            spanGaps: true,
                             tension: 0.2,
                             borderWidth: 2.5,
                             order: 1
@@ -572,7 +603,7 @@
                             type: 'bar',
                             label: 'Total de Tasks no ETD',
                             data: dadosBarras,
-                            yAxisID: 'yVolume', // Vincula ao eixo do volume
+                            yAxisID: 'yVolume',
                             backgroundColor: '#06b6d4',
                             borderRadius: 4,
                             barPercentage: 0.6,
