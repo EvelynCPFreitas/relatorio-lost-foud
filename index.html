@@ -190,15 +190,15 @@
                             <i data-lucide="clock" class="w-5 h-5 text-cyan-500"></i> Distribuição por ETD & Horário de Pico
                         </h3>
                         <p class="text-xs text-gray-500 dark:text-darkText mt-0.5">
-                            Volume acumulado por ETD e o volume registrado no horário de maior pico de envio
+                            Total de tasks do ETD (eixo esquerdo) vs. Hora do dia em que ocorreu o maior pico de envio (eixo direito)
                         </p>
                     </div>
                     <div class="flex items-center gap-4 text-xs font-semibold mt-3 sm:mt-0">
                         <span class="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                            <span class="w-3 h-3 rounded-sm bg-[#06b6d4] inline-block"></span> Total no ETD
+                            <span class="w-3 h-3 rounded-sm bg-[#06b6d4] inline-block"></span> Total de Tasks
                         </span>
                         <span class="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                            <span class="w-2.5 h-2.5 rounded-full border-2 border-[#f97316] bg-white inline-block"></span> Pico de Envio
+                            <span class="w-2.5 h-2.5 rounded-full border-2 border-[#f97316] bg-white inline-block"></span> Hora de Pico (0h-23h)
                         </span>
                     </div>
                 </div>
@@ -491,21 +491,23 @@
 
                 etdMap[etd].total++;
 
-                // Extrai a hora de envio (suporta hora_envio, horario_envio, hora, criado_em ou timestamp Firestore)
+                // Extrai a hora inteira de envio (0 a 23)
                 let horaRef = t.hora_envio || t.horario_envio || t.hora || t.criado_em || '';
-                let horaFormatada = 'N/I';
+                let horaInteira = null;
 
                 if (horaRef) {
                     if (typeof horaRef === 'string') {
                         const match = horaRef.match(/(\d{1,2}):\d{2}/);
-                        if (match) horaFormatada = `${match[1].padStart(2, '0')}:00`;
+                        if (match) horaInteira = parseInt(match[1], 10);
                     } else if (horaRef.toDate) {
                         const d = horaRef.toDate();
-                        horaFormatada = `${String(d.getHours()).padStart(2, '0')}:00`;
+                        horaInteira = d.getHours();
                     }
                 }
 
-                etdMap[etd].horasEnvio[horaFormatada] = (etdMap[etd].horasEnvio[horaFormatada] || 0) + 1;
+                if (horaInteira !== null && !isNaN(horaInteira)) {
+                    etdMap[etd].horasEnvio[horaInteira] = (etdMap[etd].horasEnvio[horaInteira] || 0) + 1;
+                }
             });
 
             // Mostra TODOS os ETDs ordenados cronologicamente (00:00 até 23:00)
@@ -513,26 +515,28 @@
 
             const labels = [];
             const dadosBarras = [];
-            const dadosLinha = [];
-            const picosTexto = [];
+            const dadosLinhaHora = [];
+            const dadosQtdEnvios = [];
 
             todosOsEtds.forEach(etd => {
                 const item = etdMap[etd];
                 labels.push(etd);
                 dadosBarras.push(item.total);
 
-                let maiorHora = 'N/I';
-                let maiorVolume = 0;
+                let picoHoraNum = null;
+                let maiorQtd = 0;
 
-                Object.entries(item.horasEnvio).forEach(([hr, qtd]) => {
-                    if (qtd > maiorVolume) {
-                        maiorVolume = qtd;
-                        maiorHora = hr;
+                Object.entries(item.horasEnvio).forEach(([hrStr, qtd]) => {
+                    const hr = parseInt(hrStr, 10);
+                    if (qtd > maiorQtd) {
+                        maiorQtd = qtd;
+                        picoHoraNum = hr;
                     }
                 });
 
-                dadosLinha.push(maiorVolume);
-                picosTexto.push(maiorHora !== 'N/I' ? `${maiorHora} (${maiorVolume})` : `${maiorVolume} casos`);
+                // A bolinha fica na posição numérica do horário (ex: 10 para 10h)
+                dadosLinhaHora.push(picoHoraNum);
+                dadosQtdEnvios.push(maiorQtd);
             });
 
             const ctx = document.getElementById('chart-etd-pico');
@@ -550,23 +554,25 @@
                     datasets: [
                         {
                             type: 'line',
-                            label: 'Pico de Envio',
-                            data: dadosLinha,
+                            label: 'Hora de Maior Pico',
+                            data: dadosLinhaHora,
+                            yAxisID: 'yHoras', // Vincula ao eixo das horas
                             borderColor: '#f97316',
                             backgroundColor: '#ffffff',
                             pointBackgroundColor: '#ffffff',
                             pointBorderColor: '#f97316',
-                            pointBorderWidth: 2,
-                            pointRadius: 4.5,
-                            pointHoverRadius: 6,
-                            tension: 0.25,
-                            borderWidth: 2,
+                            pointBorderWidth: 2.5,
+                            pointRadius: 5.5,
+                            pointHoverRadius: 7,
+                            tension: 0.2,
+                            borderWidth: 2.5,
                             order: 1
                         },
                         {
                             type: 'bar',
                             label: 'Total de Tasks no ETD',
                             data: dadosBarras,
+                            yAxisID: 'yVolume', // Vincula ao eixo do volume
                             backgroundColor: '#06b6d4',
                             borderRadius: 4,
                             barPercentage: 0.6,
@@ -582,11 +588,15 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                afterLabel: function(context) {
-                                    if (context.dataset.type === 'line') {
-                                        return `Horário do pico: ${picosTexto[context.dataIndex]}`;
+                                label: function(context) {
+                                    if (context.dataset.yAxisID === 'yHoras') {
+                                        const hora = context.raw;
+                                        if (hora === null || hora === undefined) return ' Pico: Não informado';
+                                        const horaStr = `${String(hora).padStart(2, '0')}:00h`;
+                                        const qtd = dadosQtdEnvios[context.dataIndex];
+                                        return ` Hora de maior pico: ${horaStr} (${qtd} envios)`;
                                     }
-                                    return '';
+                                    return ` Total de Tasks: ${context.raw}`;
                                 }
                             }
                         }
@@ -602,10 +612,41 @@
                                 minRotation: 0
                             }
                         },
-                        y: {
+                        yVolume: {
+                            type: 'linear',
+                            position: 'left',
                             beginAtZero: true,
                             grid: { color: corGrade },
-                            ticks: { color: corTexto, precision: 0 }
+                            ticks: { 
+                                color: corTexto,
+                                precision: 0 
+                            },
+                            title: {
+                                display: true,
+                                text: 'Total de Tasks',
+                                color: corTexto,
+                                font: { size: 10, weight: 'bold' }
+                            }
+                        },
+                        yHoras: {
+                            type: 'linear',
+                            position: 'right',
+                            min: 0,
+                            max: 24,
+                            grid: { drawOnChartArea: false },
+                            ticks: {
+                                color: '#f97316',
+                                stepSize: 4,
+                                callback: function(value) {
+                                    return `${String(value).padStart(2, '0')}:00`;
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Horário do Pico (00:00 - 24:00)',
+                                color: '#f97316',
+                                font: { size: 10, weight: 'bold' }
+                            }
                         }
                     }
                 }
@@ -625,8 +666,8 @@
                 const corTexto = isDark ? '#9ca3af' : '#4b5563';
                 const corGrade = isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.05)';
                 chartEtdInstance.options.scales.x.ticks.color = corTexto;
-                chartEtdInstance.options.scales.y.ticks.color = corTexto;
-                chartEtdInstance.options.scales.y.grid.color = corGrade;
+                chartEtdInstance.options.scales.yVolume.ticks.color = corTexto;
+                chartEtdInstance.options.scales.yVolume.grid.color = corGrade;
                 chartEtdInstance.update();
             }
         };
