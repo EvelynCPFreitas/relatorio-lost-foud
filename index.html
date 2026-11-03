@@ -615,6 +615,11 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    // Garante que o tooltip ative ambos os datasets no mesmo índice do ETD
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -622,7 +627,7 @@
                                 label: function(context) {
                                     if (context.dataset.yAxisID === 'yHoras') {
                                         const hora = context.raw;
-                                        if (hora === null || hora === undefined) return ' Pico: Não informado';
+                                        if (hora === null || hora === undefined) return ' Hora de maior pico: Não informado';
                                         const horaStr = `${String(hora).padStart(2, '0')}:00h`;
                                         const qtd = dadosQtdEnvios[context.dataIndex];
                                         return ` Hora de maior pico: ${horaStr} (${qtd} envios)`;
