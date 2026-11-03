@@ -270,7 +270,7 @@
 
         const isVazio = (val) => !val || String(val).trim() === '' || String(val).trim() === '-';
 
-        // Extração de hora que lê o padrão exato da data/hora registrado no documento
+        // Extração de hora que lê o padrão exato da data/hora registrado no documento (ex: "(03/11/2026 09:16)")
         function extrairHoraDoItem(t) {
             for (const key of Object.keys(t)) {
                 const val = t[key];
@@ -286,7 +286,7 @@
                     return val.getHours();
                 }
 
-                // Se for string com a data/hora exata mostrada na imagem: "(03/11/2026 09:16)"
+                // Se for string com a data/hora
                 if (typeof val === 'string') {
                     // Padrão DD/MM/AAAA HH:MM ou AAAA-MM-DD HH:MM
                     const matchDataHora = val.match(/\d{2,4}[-\/]\d{2}[-\/]\d{2,4}\s+(\d{1,2}):\d{2}/);
@@ -294,7 +294,7 @@
                         return parseInt(matchDataHora[1], 10);
                     }
 
-                    // Se vier em parênteses ou junto ao login: (09:16)
+                    // Se vier em parênteses ou junto ao login: (09:16) ou (03/11/2026 09:16)
                     const matchParenteses = val.match(/\((\d{2}\/\d{2}\/\d{4}\s+)?(\d{1,2}):\d{2}\)/);
                     if (matchParenteses) {
                         return parseInt(matchParenteses[2], 10);
@@ -659,29 +659,24 @@
                                 font: { size: 10, weight: 'bold' }
                             }
                         },
-                       yHoras: {
-    type: 'linear',
-    position: 'right',
-    min: 0,
-    max: 23,
-    grid: { drawOnChartArea: false },
-    ticks: {
-        color: '#f97316',
-        stepSize: 3, // Gera marcações limpas: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 23:00
-        callback: function(value) {
-            return `${String(value).padStart(2, '0')}:00`;
-        }
-    },
-    title: {
-        display: true,
-        text: 'Horário do Pico (00:00 - 23:00)',
-        color: '#f97316',
-        font: { size: 10, weight: 'bold' }
-    }
-}
+                        yHoras: {
+                            type: 'linear',
+                            position: 'right',
+                            min: 0,
+                            max: 23,
+                            grid: { drawOnChartArea: false },
+                            afterBuildTicks: function(axis) {
+                                axis.ticks = [0, 4, 8, 12, 16, 20, 23].map(v => ({ value: v }));
+                            },
+                            ticks: {
+                                color: '#f97316',
+                                callback: function(value) {
+                                    return `${String(value).padStart(2, '0')}:00`;
+                                }
+                            },
                             title: {
                                 display: true,
-                                text: 'Horário do Pico (00:00 - 24:00)',
+                                text: 'Horário do Pico (00:00 - 23:00)',
                                 color: '#f97316',
                                 font: { size: 10, weight: 'bold' }
                             }
