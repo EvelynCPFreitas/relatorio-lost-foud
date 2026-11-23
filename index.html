@@ -56,8 +56,9 @@
         <!-- ABA 1: NÚMEROS GERAIS -->
         <section id="tab-numeros-gerais" class="page-section space-y-4">
             
-            <!-- LINHA SUPERIOR -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- LINHA SUPERIOR (3 COLUNAS COM ÁREA DE ATENÇÃO) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Volume Total -->
                 <div class="bg-green-50/50 dark:bg-darkCard p-5 rounded-xl border border-green-200 dark:border-green-900/50 shadow-sm relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
                     <h3 class="text-[11px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Volume Total de Tasks</h3>
@@ -65,12 +66,13 @@
                         <span class="text-5xl font-extrabold text-green-600 dark:text-green-400 tracking-tighter" id="val-vol-total">0</span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-darkText mt-3">
-                        Base de dados sincronizada · Pendentes: 
+                        Base sincronizada · Pendentes: 
                         <span class="text-red-500 font-bold" id="val-pendentes-picking">0</span> Picking | 
                         <span class="text-red-500 font-bold" id="val-pendentes-packing">0</span> Packing
                     </p>
                 </div>
 
+                <!-- Auditorias Concluídas -->
                 <div class="bg-lightCard dark:bg-darkCard p-5 rounded-xl border border-borderGray/20 shadow-sm relative overflow-hidden">
                     <h3 class="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Auditorias Concluídas</h3>
                     <div class="flex items-baseline gap-2 mt-2">
@@ -78,6 +80,27 @@
                     </div>
                     <p class="text-[11px] text-gray-400 dark:text-gray-400 flex items-center gap-1 mt-3">
                         <i data-lucide="package" class="w-3 h-3"></i> Total de tarefas finalizadas
+                    </p>
+                </div>
+
+                <!-- NOVO CARD: ÁREA DE ATENÇÃO (CLICÁVEL PARA ABRIR O MODAL) -->
+                <div onclick="abrirModalAreaAtencao()" class="bg-red-50/60 dark:bg-darkCard p-5 rounded-xl border border-red-200 dark:border-red-900/50 shadow-sm relative overflow-hidden cursor-pointer hover:shadow-md hover:border-red-400 transition-all group">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="text-[11px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 animate-pulse"></i> Área de Atenção
+                        </h3>
+                        <span class="text-[10px] font-bold text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-900/40 px-2 py-0.5 rounded-full group-hover:bg-red-600 group-hover:text-white transition-colors">
+                            Ver ranking ↗
+                        </span>
+                    </div>
+                    <div class="flex items-baseline gap-3 mt-2">
+                        <span class="text-5xl font-extrabold text-red-600 dark:text-red-400 tracking-tighter" id="val-area-atencao-nome">--</span>
+                        <span class="text-sm font-bold text-gray-600 dark:text-gray-300" id="val-area-atencao-qtd">0 registros</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-darkText mt-3 flex items-center justify-between">
+                        <span>Maior incidência (MZ0–MZ3, HV)</span>
+                        <span class="font-bold text-red-600 dark:text-red-400" id="val-area-atencao-pct">0%</span>
                     </p>
                 </div>
             </div>
@@ -239,6 +262,57 @@
 
     </main>
 
+    <!-- MODAL: ÁREA DE ATENÇÃO (MZ0, MZ1, MZ2, MZ3, HV) -->
+    <div id="modal-area-atencao" onclick="fecharModalAreaAtencao(event)" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity">
+        <div onclick="event.stopPropagation()" class="bg-lightCard dark:bg-darkCard w-full max-w-lg rounded-2xl shadow-2xl border border-borderGray/30 overflow-hidden animate-fade-in">
+            
+            <!-- Cabeçalho do Modal -->
+            <div class="bg-red-600 px-6 py-4 flex justify-between items-center text-white">
+                <div class="flex items-center gap-2.5">
+                    <i data-lucide="alert-octagon" class="w-6 h-6"></i>
+                    <div>
+                        <h3 class="font-extrabold text-base tracking-tight">Área de Atenção por Zona</h3>
+                        <p class="text-[11px] text-red-100">Comparativo de registros entre MZ0, MZ1, MZ2, MZ3 e HV</p>
+                    </div>
+                </div>
+                <button onclick="fecharModalAreaAtencao()" class="p-1.5 rounded-lg hover:bg-red-700 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Corpo do Modal -->
+            <div class="p-6 space-y-5">
+                <!-- Destaque da Área Crítica -->
+                <div class="bg-red-50 dark:bg-black/25 border border-red-200 dark:border-red-900/40 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">Zona com Maior Incidência</span>
+                        <h4 class="text-3xl font-black text-red-600 dark:text-red-400 mt-0.5" id="modal-top-mz-nome">--</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-2xl font-extrabold text-gray-800 dark:text-white" id="modal-top-mz-qtd">0</span>
+                        <p class="text-xs text-gray-500 dark:text-darkText">registros identificados</p>
+                    </div>
+                </div>
+
+                <!-- Lista Ranking com Barras de Progresso -->
+                <div>
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Distribuição Completa</h5>
+                    <div id="modal-lista-mzs" class="space-y-3">
+                        <!-- Preenchido dinamicamente pelo JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rodapé do Modal -->
+            <div class="px-6 py-3.5 bg-gray-50 dark:bg-black/20 border-t border-borderGray/20 flex justify-between items-center">
+                <span class="text-[11px] text-gray-500 dark:text-darkText">Total mapeado: <strong id="modal-total-mapeado" class="text-gray-800 dark:text-white">0</strong></span>
+                <button onclick="fecharModalAreaAtencao()" class="px-4 py-1.5 bg-primaryBtn text-white text-xs font-bold rounded-lg hover:bg-blue-900 transition-colors">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -259,6 +333,7 @@
         let tarefasCache = [];
         let chartCulpabilidadeInstance = null;
         let chartEtdInstance = null;
+        let rankingAreasCache = [];
 
         onSnapshot(collection(db, "tarefas"), (snapshot) => {
             tarefasCache = [];
@@ -270,37 +345,51 @@
 
         const isVazio = (val) => !val || String(val).trim() === '' || String(val).trim() === '-';
 
-        // Extração de hora que lê o padrão exato da data/hora registrado no documento (ex: "(03/11/2026 09:16)")
+        // Identifica e normaliza a zona (MZ0, MZ1, MZ2, MZ3 ou HV) a partir do registro
+        function extrairZonaMZ(t) {
+            const candidatos = [t.mz, t.area, t.zona, t.endereco, t.localizacao];
+            for (const val of candidatos) {
+                if (!val) continue;
+                const str = String(val).toUpperCase().trim();
+                
+                // Verifica HV
+                if (str === 'HV' || str.startsWith('HV-') || str.startsWith('HV ') || /\bHV\b/.test(str)) {
+                    return 'HV';
+                }
+                // Verifica MZ-0 / MZ0 até MZ-3 / MZ3
+                const matchMz = str.match(/MZ[-\s]?([0-3])\b/);
+                if (matchMz) {
+                    return `MZ${matchMz[1]}`;
+                }
+            }
+            return null;
+        }
+
+        // Extração de hora que lê o padrão exato da data/hora registrado no documento
         function extrairHoraDoItem(t) {
             for (const key of Object.keys(t)) {
                 const val = t[key];
                 if (!val) continue;
 
-                // Se for Timestamp do Firestore
                 if (typeof val === 'object' && typeof val.toDate === 'function') {
                     return val.toDate().getHours();
                 }
 
-                // Se for instância Date
                 if (val instanceof Date) {
                     return val.getHours();
                 }
 
-                // Se for string com a data/hora
                 if (typeof val === 'string') {
-                    // Padrão DD/MM/AAAA HH:MM ou AAAA-MM-DD HH:MM
                     const matchDataHora = val.match(/\d{2,4}[-\/]\d{2}[-\/]\d{2,4}\s+(\d{1,2}):\d{2}/);
                     if (matchDataHora) {
                         return parseInt(matchDataHora[1], 10);
                     }
 
-                    // Se vier em parênteses ou junto ao login: (09:16) ou (03/11/2026 09:16)
                     const matchParenteses = val.match(/\((\d{2}\/\d{2}\/\d{4}\s+)?(\d{1,2}):\d{2}\)/);
                     if (matchParenteses) {
                         return parseInt(matchParenteses[2], 10);
                     }
 
-                    // Se for campo de hora/registo habitual
                     if (key.toLowerCase().includes('data') || key.toLowerCase().includes('hora') || key.toLowerCase().includes('criado') || key.toLowerCase().includes('reg')) {
                         const matchSimples = val.match(/(?:T|\s|^)(\d{1,2}):\d{2}/);
                         if (matchSimples) {
@@ -327,6 +416,15 @@
             let cycleTotal = 0, cycleManual = 0, cyclePicking = 0;
             const mapCulp = {};
 
+            // Contagem específica das zonas solicitadas: MZ0, MZ1, MZ2, MZ3, HV
+            const contagemAreas = {
+                'MZ0': 0,
+                'MZ1': 0,
+                'MZ2': 0,
+                'MZ3': 0,
+                'HV': 0
+            };
+
             const motivosPermitidos = [
                 "Inconclusivo", "Picking Massivo", "Deixado no endereço / Encontrado na bin",
                 "Meli divergente", "Tote finalizada pela bancada com produto",
@@ -342,6 +440,14 @@
                 const isManual = isVazio(t.tote) && isVazio(t.meli) && isVazio(t.etd) && resultadoAuditoriaLower === 'cycle';
                 const isPickingCycle = !isVazio(t.tote) && !isVazio(t.meli) && !isVazio(t.etd) && resultadoAuditoriaLower !== 'cycle' && t.status_fisico === 'Nao';
 
+                // Contabiliza MZ (exceto cycle manual sem endereço)
+                if (!isManual) {
+                    const zona = extrairZonaMZ(t);
+                    if (zona && contagemAreas.hasOwnProperty(zona)) {
+                        contagemAreas[zona]++;
+                    }
+                }
+
                 // Cycles
                 if (isManual) {
                     cycleManual++;
@@ -355,7 +461,7 @@
                 if (status === 'pendente') pendentesPicking++;
                 if (status === 'aguardando auditoria packing') pendentesPacking++;
 
-                // REGRA 2: Auditorias Concluídas = Status 'Auditado' + Lost Salvo + Lost Não Localizado (sem cycle manual)
+                // REGRA 2: Auditorias Concluídas
                 const isAuditado = (status === 'auditado');
                 const isLostSalvo = (status === 'lost salvo');
                 const isLostNaoLoc = (status === 'lost não localizado' || status === 'lost nao localizado');
@@ -368,14 +474,13 @@
                 if (isLostSalvo) lostSalvo++;
                 if (isLostNaoLoc) lostNaoLocalizado++;
 
-                // REGRA 3: Divergência Picking = Físico "não" de acordo + Inversão de Tote
+                // REGRA 3: Divergência Picking
                 const isInversaoTote = (resultadoAuditoriaLower === 'inversão de tote' || resultadoAuditoriaLower === 'inversao de tote');
-                
                 if (t.status_fisico === 'Nao' || isInversaoTote) {
                     divPicking++;
                 }
 
-                // REGRA 4: Divergência Packing = Culpabilidade em Packing - Inversão de Tote
+                // REGRA 4: Divergência Packing
                 if (resultadoAuditoriaLower !== 'aguardando' && 
                     resultadoAuditoriaLower !== 'sem divergência' && 
                     resultadoAuditoriaLower !== 'sem divergencia' && 
@@ -407,6 +512,14 @@
                 }
             });
 
+            // Ordena ranking das áreas (MZ0, MZ1, MZ2, MZ3, HV) do maior para o menor
+            rankingAreasCache = Object.entries(contagemAreas)
+                .map(([zona, qtd]) => ({ zona, qtd }))
+                .sort((a, b) => b.qtd - a.qtd);
+
+            const totalAreasMapeadas = rankingAreasCache.reduce((acc, item) => acc + item.qtd, 0);
+            const topArea = rankingAreasCache[0];
+
             // Atualização dos elementos do DOM
             const atualizaDado = (id, valor) => {
                 const elemento = document.getElementById(id);
@@ -426,9 +539,100 @@
             atualizaDado('val-cycle-manual', cycleManual);
             atualizaDado('val-cycle-picking', cyclePicking);
 
+            // Atualiza Card de Área de Atenção
+            if (topArea && topArea.qtd > 0) {
+                const pctTop = totalAreasMapeadas > 0 ? ((topArea.qtd / totalAreasMapeadas) * 100).toFixed(1) : 0;
+                atualizaDado('val-area-atencao-nome', topArea.zona);
+                atualizaDado('val-area-atencao-qtd', `${topArea.qtd} registros`);
+                atualizaDado('val-area-atencao-pct', `${pctTop}% do total`);
+            } else {
+                atualizaDado('val-area-atencao-nome', '--');
+                atualizaDado('val-area-atencao-qtd', '0 registros');
+                atualizaDado('val-area-atencao-pct', '0%');
+            }
+
+            // Atualiza dados internos do Modal de Área de Atenção
+            atualizarConteudoModalAreaAtencao(totalAreasMapeadas);
+
             renderizarGraficoCulpabilidade(mapCulp);
             renderizarGraficoEtdPico(tarefasValidas);
         }
+
+        function atualizarConteudoModalAreaAtencao(totalMapeado) {
+            const listaContainer = document.getElementById('modal-lista-mzs');
+            const topNomeEl = document.getElementById('modal-top-mz-nome');
+            const topQtdEl = document.getElementById('modal-top-mz-qtd');
+            const totalMapeadoEl = document.getElementById('modal-total-mapeado');
+
+            if (!listaContainer) return;
+
+            const topArea = rankingAreasCache[0];
+            if (topArea && topArea.qtd > 0) {
+                topNomeEl.innerText = topArea.zona;
+                topQtdEl.innerText = topArea.qtd;
+            } else {
+                topNomeEl.innerText = 'Sem registros';
+                topQtdEl.innerText = '0';
+            }
+
+            totalMapeadoEl.innerText = totalMapeado;
+            listaContainer.innerHTML = '';
+
+            const maxQtd = topArea ? topArea.qtd : 0;
+
+            rankingAreasCache.forEach((item, index) => {
+                const isLider = index === 0 && item.qtd > 0;
+                const percentualTotal = totalMapeado > 0 ? ((item.qtd / totalMapeado) * 100).toFixed(1) : '0.0';
+                const larguraBarra = maxQtd > 0 ? ((item.qtd / maxQtd) * 100).toFixed(0) : 0;
+
+                const corBarra = isLider ? 'bg-red-600' : 'bg-primaryBtn dark:bg-blue-500';
+                const badgeLider = isLider 
+                    ? `<span class="ml-2 px-2 py-0.5 text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 rounded-full">MAIOR ÍNDICE</span>` 
+                    : '';
+
+                const row = document.createElement('div');
+                row.className = `p-3 rounded-xl border ${isLider ? 'bg-red-50/50 border-red-200 dark:bg-red-950/20 dark:border-red-900/40' : 'bg-gray-50/70 border-borderGray/15 dark:bg-black/20'}`;
+                row.innerHTML = `
+                    <div class="flex justify-between items-center mb-1.5">
+                        <div class="flex items-center">
+                            <span class="font-extrabold text-sm ${isLider ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}">${index + 1}º ${item.zona}</span>
+                            ${badgeLider}
+                        </div>
+                        <div class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                            ${item.qtd} <span class="text-gray-400 font-normal">(${percentualTotal}%)</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                        <div class="${corBarra} h-2 rounded-full transition-all duration-500" style="width: ${larguraBarra}%"></div>
+                    </div>
+                `;
+                listaContainer.appendChild(row);
+            });
+        }
+
+        window.abrirModalAreaAtencao = function() {
+            const modal = document.getElementById('modal-area-atencao');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                lucide.createIcons();
+            }
+        };
+
+        window.fecharModalAreaAtencao = function() {
+            const modal = document.getElementById('modal-area-atencao');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        };
+
+        // Fecha modal com tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.fecharModalAreaAtencao();
+            }
+        });
 
         function renderizarGraficoCulpabilidade(dadosCulpabilidade) {
             const tbody = document.getElementById('tabela-culpabilidade-body');
@@ -518,7 +722,6 @@
                 let etd = (t.etd || '').trim();
                 if (isVazio(etd)) return;
 
-                // Normaliza para formato HH:MM (ex: "8:00" -> "08:00")
                 if (etd.includes(':')) {
                     const partes = etd.split(':');
                     etd = `${partes[0].padStart(2, '0')}:${partes[1].padStart(2, '0')}`;
@@ -533,7 +736,6 @@
 
                 etdMap[etd].total++;
 
-                // Extrai a hora inteira de envio da task
                 const horaInteira = extrairHoraDoItem(t);
 
                 if (horaInteira !== null && !isNaN(horaInteira) && horaInteira >= 0 && horaInteira <= 23) {
@@ -541,7 +743,6 @@
                 }
             });
 
-            // Mostra TODOS os ETDs ordenados cronologicamente (00:00 até 23:00)
             const todosOsEtds = Object.keys(etdMap).sort((a, b) => a.localeCompare(b));
 
             const labels = [];
@@ -615,7 +816,6 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    // Garante que o tooltip ative ambos os datasets no mesmo índice do ETD
                     interaction: {
                         mode: 'index',
                         intersect: false
